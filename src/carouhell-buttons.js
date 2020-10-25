@@ -1,17 +1,16 @@
-;carouhell = (f=>(u,_) => { f(u)
-	var h=(i,f,n)=>document.getElementById(i).addEventListener("click",_=>f()||n||clearInterval(u.t))
-	u.right = T=>{
-	if(u.children.length<2)return;
-		T = "transitionDuration"
-		var li = u.lastElementChild
-		li.style[T]=0
-		li.style.marginLeft = -li.offsetWidth+"px"
-		u.insertBefore(li,u.children[0])
-		setTimeout(_=>{li.style[T]=u.trans+"ms";li.style.marginLeft=0},50)
-	}
-	u.play = x=>{u.t=setInterval(u.dataset.dir>0?u.right:u.left, x||u.dataset.autoplay||4000)}
-	if(_=u.dataset.left) h(_,u.left)
-	if(_=u.dataset.right) h(_,u.right)
-	if(_=u.dataset.play) h(_,u.play,1)
-	if(_=u.dataset.pause) h(_,_=>_)
+;carouhell = (f=>(u,s,b,T,k,D,_) => {f(u);s=u.dataset;T="transitionDuration",k="children"
+	D=getComputedStyle(u[k][0]).getPropertyValue(T)
+	u.right= L=>{if(u[k]length>1){
+		(L=u.lastElementChild).style[T]=0
+		L.style.marginLeft=-L.offsetWidth+"px"
+		u.insertBefore(L, u[k][0])
+		setTimeout(_=>{L.style[T]=D; L.style.marginLeft=0},50)
+	}}
+	u.play=x=>{u.t=setInterval(s.dir>0?u.right:u.left, x||u.dataset.stay||4e3)}
+	u.pause=clearInterval(u.t)
+	b=(i,f,n)=>document.getElementById(i).addEventListener("click", _=>f()||n||u.pause())
+	if(_=s.left) b(_,u.left)
+	if(_=s.right) b(_,u.right)
+	if(_=s.play) b(_,u.play,1)
+	if(_=s.pause) b(_,_=>_)
 })(carouhell);

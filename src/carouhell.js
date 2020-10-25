@@ -1,17 +1,16 @@
-;((d,e)=>{
-carouhell=(u,c,_)=>{c="children"
-	u.left=L=>{if(u[c].length<2)return;
-		(L=u[c][0]).style.marginLeft=-L.offsetWidth+"px"
-		setTimeout(x=>{u.appendChild(L);L.style.marginLeft=0},u.dataset.stay||4000)
-	}
-	if(_=u.dataset.stay)u.t=setInterval(u.left,_)
-	u[e]("mouseover",_=>clearInterval(u.t))
-	(function(){setTimeout(_=>eval(u.dataset.load))}).call(u)
+;((d,a,C,c,I)=>{
+c=window[C]=(u,k,S,T,D)=>{k="children";T=setTimeout;S=u.dataset;D=S.stay||4e3
+	u.left=L=>u[k].length>1&&
+		((L=u[k][0]).style.marginLeft=-L.offsetWidth+"px")&&
+		T(_=>{u.appendChild(L);L.style.marginLeft=0},D)
+	if(!S.paused)u.t=setInterval(u.left,D)
+	if(S.hoverPause)u[a]("mouseover",_=>clearInterval(u.t))
+	;(function(){T(_=>eval(S.load))}).call(u)
 }
-(d)[e]("DOMContentLoaded",_=>{
-Array.from(d.getElementsByClassName("carouhell")).forEach(carouhell)
-new MutationObserver(M=>M.forEach(m=>
-m.addedNodes.forEach(n=>{if((_=n.classList)&&_.contains("carouhell"))carouhell(n)})
-)).observe(d.body,{subtree:1,childList:1})
-})
-})(document,"addEventListener");
+I=_=>{[...d.getElementsByClassName(C)].forEach(c)
+	new MutationObserver(M=>M.forEach(m=>
+		m.addedNodes.forEach(n=>(_=n.classList)&&_.contains(C)?c(n):0)
+	)).observe(d,{subtree:1,childList:1})
+}
+d.readyState=="loading"?_=>d[a]("DOMContentLoaded",I):I()
+})(document,"addEventListener","carouhell");

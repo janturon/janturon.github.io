@@ -1,0 +1,35 @@
+<h1>Carouhell - manual rotation</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p>Carouhell provides <b>data-load</b> attribute, which can contain any valid JS code that executes after the carouhell and all its extensions (if any) loads. If you don't provide the attribute, it defaults to <code>this.play()</code>, which autoplays the carouhell.</p>
+<p>Basic carouhell also provides the <code>left()</code> method which rotates one frame from right to left. Both methods can be called outside of carouhell scope (without using <i>this</i> on carouhell's attributes), see the buttons below.</p>
+<p>Alas, there is no pause method, but the timer is exposed in <code>t</code> attribute, which you can clear by yourself, see the <b>onmouseover</b>, which pauses autoplay rotation on mouse hovering above the carousel (similarly, you could also attach the timer clearing to touch event or use general pointer events).</p>
+<p>To change the rotation speed, set the <b>data-stay</b> attribute, then pause, then play again. This is non-intuitive, but I reached my limits what can I stuff into the 666 bytes long code. If you need more comfortable way to handle your carouhell, use <b>the buttons extension</b>, which adds more features in another 666 bytes, pause method and play method reacting on attribute changes among them.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+</style>
+
+<button onclick="test.left()">Rotate one</button>
+<button onclick="test.play()">Play</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-load="false" onmouseover="clearInterval(this.t)">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

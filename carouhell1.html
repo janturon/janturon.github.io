@@ -1,11 +1,12 @@
-<h1>Carouhell - Basic example</h1>
+<h1>Carouhell - Basic use</h1>
+<script src="src/script.js"></script>
 <p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p>To create a carousell from list, add a class <b>carouhell</b> to it. The carousel below should rotate from right to left with a period of 1000ms specified in the <b>data-stay</b> attribute. Set <b>data-hover-pause</b> to pause on mouse over. The client code sets the carousel size (400x400) and the transition duration (400ms) in the <b>style</b>. You can add a third image anytime you click the button which calls the client function <b>addImage()</b>.</p>
-<p>To make this stuff working, just add the <b>carouhell.css</b> (333 B) and the <b>carouhell.js</b> (666 B). No other dependencies, see the code snippet below (which has also 666 B).</p>
+<p>To create a carousell from list, add a class <b>carouhell</b> to it. List items can contain any reasonable element (mostly images and links). The carousel below should rotate indefinitely from right to left with a period of 3000ms specified in the <b>data-stay</b> attribute (can be omitted, the default is 4000). The client code sets the carousel size (400x400) and the transition duration (400ms) in the <b>style</b>.</p>
+<p>To make this stuff working, just add the <b>carouhell.css</b> (666 B) and the <b>carouhell.js</b> (666 B). No other dependencies, this ain't a bloatware: the code snippet below is roughly the same size as the styles and javascript combined.</p>
+<p>The default styles center the images to fit the carousel contents, unless you set class <b>cover</b> somewhere to center, crop and cover all the area. The images can be set as background or image elements, possibly nested in other elements. You can also nest list: the items distribute evenly into the free space. The free space is split horizontally unless you set class <b>column</b> to the nested list element (class <b>row</b> can override back in nested element). Finally, you can include text wrapped in element with class <b>stripe</b> to produce semitransparent black badge with white text at the bottom. Feel free to play with the styles: it should be very easy to understand and alter.</p>
 
-<main id="main">
-</main>
+<main id="main"></main>
 
 <xmp id="xmp">
 <link rel="stylesheet" type="text/css" href="src/carouhell.css">
@@ -16,33 +17,31 @@
 .carouhell li { transition: 400ms; }
 </style>
 
-<script>
-function addImage(src) {
-  var li = document.createElement("li");
-  li.innerHTML = `<img src="${src}">`;
-  document.getElementById("test").appendChild(li);
-}
-</script>
-
-<button onclick="addImage('assets/img3.jpg');this.disabled=1">Add the third image</button>
-<br><br>
-
-<ul id="test" class="carouhell" data-stay="1000">
-  <li><img src="assets/img1.jpg">
-  <li><a href="#"><img src="assets/img2.jpg"></a>
+<ul class="carouhell" data-stay="3000">
+  <li>
+  <ul class="cover">
+    <li style="background-image: url('assets/img1.jpg')"><a href="#" class="stripe">Tree one</a>
+    <li>
+    <ul class="column">
+      <li style="background-image: url('assets/img2.jpg')">
+      <li style="background-image: url('assets/img3.jpg')"><span class="stripe">Tree three</span>
+    </ul>
+  </ul>
+  <li>
+  <ul class="cover column">
+    <li style="background-image: url('assets/img1.jpg')"><a href="#" class="stripe">Tree one</a>
+    <li>
+    <ul class="row">
+      <li style="background-image: url('assets/img2.jpg')">
+      <li style="background-image: url('assets/img3.jpg')"><span class="stripe">Tree three</span>
+    </ul>
+  </ul>
+  <li><a href="#"><img src="assets/img1.jpg"></a>
+  <li style="background-image: url('assets/img2.jpg')"><span class="stripe">Tree two</span>
+  <li><img src="assets/img3.jpg">
 </ul>
 </xmp>
 
 <script>
-	function xmp2code(xmp, tgt) {
-		tgt.innerHTML = xmp.innerHTML;
-		var scripts = tgt.getElementsByTagName("script");
-		[...scripts].forEach(s => {
-			var el = document.createElement("script");
-			if(s.src) el.src = s.src;
-			else el.innerHTML = s.innerText;
-			document.body.appendChild(el);
-		});
-	}
 	xmp2code(xmp, main);
 </script>

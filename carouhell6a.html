@@ -1,0 +1,41 @@
+<h1>Carouhell - fit into viewport width</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p>Carouhell can be tweaked to rotate as many pictures as fits into viewport. Add this CSS:
+<ol>
+	<li><code>display: flex; flex-wrap: wrap; justify-content: space-evenly;</code> to carouhell class
+	<li>fixed width to carouhell item
+	<li>fixed height to both carouhell class and carouhell item
+	<li>set the transition duration low as the animation is jerky in slow shift
+</ol>
+</p>
+
+<p>Try to play with viewport width in the example below. The contents adjusts to fill 100% width.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell.js"></script>
+
+<style>
+.carouhell { height: 400px; display: flex; flex-wrap: wrap; justify-content: space-evenly; margin: 0 auto; background: gray; }
+.carouhell li { width: 400px; height: 400px; transition: 100ms; }
+</style>
+
+<ul id="test" class="carouhell" data-stay="1000">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img2.jpg">
+</ul>
+
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

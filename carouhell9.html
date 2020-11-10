@@ -1,0 +1,41 @@
+<h1>Carouhell Buttons - attributes driven playing</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: button extension</b></p>
+<p>Buttons extension fixes the <code>play()</code> method to check the <b>data-dir</b> attribute (see <a href="carouhell8.html">previous example</a>) and the <b>data-stay</b> attribute (see below). The core code requires the <code>play()</code> to stop before changing speed, no such limitation here. This extension also brings methods <code>right()</code> and <code>pause()</code>, see <a href="carouhell10.html">next example</a>.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-buttons.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+</style>
+
+Autoplay speed and direction:
+<input type="number" min="-10" max="10" value="0" onchange="setSpeed(this.value)">
+<br><br>
+
+<script>
+function setSpeed(value) {
+	test.dataset.dir = Math.sign(value);
+	test.dataset.stay = 6e3 / (1 + Math.abs(value));
+}
+</script>
+
+<ul id="test" class="carouhell" data-dir="0">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

@@ -1,0 +1,5 @@
+<script>
+x={}
+fx = (_=>eval(_)).bind(x);
+fx("console.log(this)"); // Window, expected Object
+</script>

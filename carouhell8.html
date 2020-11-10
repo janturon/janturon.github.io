@@ -1,0 +1,44 @@
+<h1>Carouhell Buttons - set rotation direction</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: button extension</b></p>
+<p>Buttons extension introduces <b>data-dir</b> attribute to define the rotation direction:
+<ul>
+	<li>negative number to rotate leftwards (default)
+	<li>zero to stay
+	<li>positive number to rotate rightwards
+</ul>
+</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-buttons.js"></script>
+
+<style>
+.carouhell { height: 400px; display: flex; flex-wrap: wrap; justify-content: space-evenly; margin: 0 auto; background: gray; }
+.carouhell li { width: 400px; height: 400px; transition: 1000ms; }
+</style>
+
+<button onclick="test.dataset.dir=-1">Leftwards</button>
+<button onclick="test.dataset.dir=0">Stay</button>
+<button onclick="test.dataset.dir=+1">Rightwards</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-stay="3000" data-dir="-1">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

@@ -1,0 +1,31 @@
+<h1>Hellama - Autoremoving elements</h1>
+<script src="src/script.js"></script>
+<script src="src/hellama.js"></script>
+<style>
+	xmp::before { display: block; font-weight: bold; font-size: 2em; }
+	xmp:nth-of-type(1)::before { content: "HTML input"; }
+	xmp:nth-of-type(2)::before { content: "JS config"; }
+	xmp:nth-of-type(3)::before { content: "HTML output"; }
+</style>
+<p><a href="/hellama.html">Back to Hellama</a></p>
+
+<p>There is a special <b>data-if</b> attribute, which is removed in every case. It also takes with it the owner element if it is not properly replaced (i.e. it contains opening hellama sequence after the processing). This happens when the replacement is missing or equals null (other falsy values don't kill the element).</p>
+
+<xmp id="_src">
+<span class="test" data-if="{one}">1</span>
+<span class="test" data-if="{two}">2</span>
+<span class="test" data-if="{three}">3</span>
+</xmp>
+
+<xmp id="_cfg">
+const cfg = { open: "{", close: "}" };
+const tags = { one: "", three: 1 }; // "two: null" also works
+hellama(document.getElementsByClassName("test"), tags, cfg);
+</xmp>
+
+<xmp id="_dst">
+</xmp>
+
+<script>
+	xmp2apply(_src, _cfg, _dst);
+</script>

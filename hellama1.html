@@ -1,0 +1,34 @@
+<h1>Hellama - Basic replacement</h1>
+<script src="src/script.js"></script>
+<script src="src/hellama.js"></script>
+<style>
+	xmp::before { display: block; font-weight: bold; font-size: 2em; }
+	xmp:nth-of-type(1)::before { content: "HTML input"; }
+	xmp:nth-of-type(2)::before { content: "JS config"; }
+	xmp:nth-of-type(3)::before { content: "HTML output"; }
+</style>
+<p><a href="/hellama.html">Back to Hellama</a></p>
+
+<p><b>Syntax:</b> <code>hellama(elements, tags, config)</code></p>
+<p><b>Params:</b>
+<ul>
+	<li><b>elements</b> [iterable] HTML elements to process
+	<li><b>tags</b> [JSON] hellatts tags definition
+	<li><b>config</b> [JSON] open and close sequence of hellatts tags (can be the same)
+</ul>
+</p>
+
+<xmp id="_src">
+<button id="test"> {value} </button>
+</xmp>
+<xmp id="_cfg">
+const cfg = { open: "{", close: "}" };
+const tags = { value: "Hello" };
+hellama([test], tags, cfg);
+</xmp>
+<xmp id="_dst">
+</xmp>
+
+<script>
+	xmp2apply(_src, _cfg, _dst);
+</script>

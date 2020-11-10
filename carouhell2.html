@@ -1,0 +1,38 @@
+<h1>Carouhell - Adding items on the fly</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p>This carouhell rotates two frames. Add a third one anytime you click the button which calls the client function <b>addImage()</b>. It is also recommended to watch the DOM realtime in browsers console.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+</style>
+
+<script>
+function addImage(src) {
+  var li = document.createElement("li");
+  li.innerHTML = `<img src="${src}">`;
+  document.getElementById("test").appendChild(li);
+}
+</script>
+
+<button onclick="addImage('assets/img3.jpg');this.disabled=1">Add the third image</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-stay="1000">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+</ul>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

@@ -1,0 +1,53 @@
+<h1>Carouhell Stripe - custom clickable stripe</h1>
+<script src="src/script.js"></script>
+<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: stripe extension</b></p>
+<p>The stripe is filled with <code>sItem(L)</code> method, which by default returns empty <code>&lt;b&gt;</code> elements. If you provide your own, <code>L</code> parameter is the corresponding <code>li</code> item of the carouhell. To achieve the click functionality, carouhell contains <code>shiftTo(pos)</code> method, where <code>pos</code> is the initial position of the item in the list. This information is provided in <code>i</code> item list attribute. Adding/removing items on the fly also updates the stripe, just note the difference between initial items position (which equals the position of thumbnails in the stripe) and current items position: the diffence is stored in <code>i</code> list attribute and equals zero if you call <code>shiftTo(0)</code>.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-stripe.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+
+#stripe1 { width: 400px; display: flex; justify-content: center; background: gray; padding: .2em 0; }
+#stripe1 b { width: 100px; height: 100px; border: 1px solid transparent; background: center/cover; cursor: pointer; }
+#stripe1 b.active { border-color: white; }
+</style>
+
+<button onclick="addMidItem('assets/img2.jpg')">Add 2<sup>nd</sup> item</button>
+<button onclick="test.shiftTo(0);test.children[1].remove()">Delete 2<sup>nd</sup> item</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-load="false" data-stripe="stripe1">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+<div id="stripe1"></div>
+
+<script>
+test.sItem = L => {
+  var b = document.createElement("b");
+  b.style.backgroundImage = `url(${L.children[0].src})`;
+  b.onclick = _=>test.shiftTo(L.i);
+  return b;
+}
+
+addMidItem = src => {
+  var li = document.createElement("li");
+  li.innerHTML = `<img src="${src}">`;
+  test.shiftTo(0);
+  test.insertBefore(li,test.children[1]);
+}
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

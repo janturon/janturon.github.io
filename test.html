@@ -1,0 +1,17 @@
+<script src="src/hellama.js"></script>
+
+<ul id="test" data-foreach="items">
+  <li>{one}</li>
+  <li>{two}</li>
+</ul>
+
+<script>
+test.children[0].addEventListener("click", e=>alert(e.target.innerHTML));
+const cfg = { open: "{", close: "}" };
+const data = [
+  {one: "eins", two: "zwei"},
+  {one: "raz", two: "dva"}
+];
+const tags = { items: data };
+hellama([test], tags, cfg);
+</script>

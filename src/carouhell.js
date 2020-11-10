@@ -1,16 +1,10 @@
-;((d,a,C,c,I)=>{
-c=window[C]=(u,k,S,T,D)=>{k="children";T=setTimeout;S=u.dataset;D=S.stay||4e3
-	u.left=L=>u[k].length>1&&
-		((L=u[k][0]).style.marginLeft=-L.offsetWidth+"px")&&
-		T(_=>{u.appendChild(L);L.style.marginLeft=0},D)
-	if(!S.paused)u.t=setInterval(u.left,D)
-	if(S.hoverPause)u[a]("mouseover",_=>clearInterval(u.t))
-	;(function(){T(_=>eval(S.load))}).call(u)
+((D,C,P,O,N,M,F,U,K,S)=>{this[C]=u=>{K=u.children;S=u.dataset;u[P].add(C)
+	u.left=L=>u[P].contains(C)&&K[1]&&((L=K[0]).style[M]=-u[O]+"px",L[N]=_=>{L[N]=0;for(U=u[O]/L[O];U-->=1;)u.appendChild(K[0]);L.style[M]=0})
+	u.play=_=>(u.t=setInterval(u.left,S.stay||4e3))
+	setTimeout((function(X){eval(X)}).bind(u,S.load||"this.play()"))
 }
-I=_=>{[...d.getElementsByClassName(C)].forEach(c)
-	new MutationObserver(M=>M.forEach(m=>
-		m.addedNodes.forEach(n=>(_=n.classList)&&_.contains(C)?c(n):0)
-	)).observe(d,{subtree:1,childList:1})
-}
-d.readyState=="loading"?_=>d[a]("DOMContentLoaded",I):I()
-})(document,"addEventListener","carouhell");
+U=_=>setTimeout(c=>{c=this[C];[...D.getElementsByClassName(C)][F](c)
+	new MutationObserver(M=>M[F](m=>m.addedNodes[F](n=>(_=n[P])&&_.contains(C)&&c(n)))).observe(D,{subtree:1,childList:1})
+})
+D.readyState[0]=="l"?addEventListener("load",U):U()
+})(document,"carouhell","classList","offsetWidth","ontransitionend","marginLeft","forEach")

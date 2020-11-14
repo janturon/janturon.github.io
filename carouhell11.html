@@ -1,32 +1,41 @@
-<h1>Carouhell Stripe - create stripe</h1>
+<link rel="stylesheet" href="src/style.css">
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p><b>Requirements: stripe extension</b></p>
-<p>The simplest use of stripe extension is to define <b>data-stripe</b> attribute containing ID of element where the stripe contents is generated and updated. By default, there is an empty <b>&lt;b&gt;</b> element for every frame in the carouhell and <b>&lt;b&gt;</b> at the position of currently active frame receives a class <b>active</b>.</p>
+<h1>Carouhell Buttons - attributes driven playing</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: button extension</b></p>
+<p>Buttons extension fixes the <tt>play()</tt> method to check the <tt>data-dir</tt> attribute (see <a href="carouhell8.html">previous example</a>) and the <tt>data-stay</tt> attribute (see below). The core code requires the <tt>play()</tt> to stop before changing speed, no such limitation here. This extension also brings methods <tt>right()</tt> and <tt>pause()</tt>, see <a href="carouhell10.html">next example</a>.</p>
 
 <main id="main">
 </main>
 
 <xmp id="xmp">
 <link rel="stylesheet" type="text/css" href="src/carouhell.css">
-<script src="src/carouhell-with-stripe.js"></script>
+<script src="src/carouhell-with-buttons.js"></script>
 
 <style>
 .carouhell { width: 400px; height: 400px; background: gray; }
 .carouhell li { transition: 400ms; }
-
-#stripe1 { width: 400px; display: flex; justify-content: center; background: gray; }
-#stripe1 b::before { font-size: 2em; margin: 0 .5em; content: '•'; }
-#stripe1 b.active::before { color: white; }
 </style>
 
-<ul class="carouhell" data-stay="1000" data-stripe="stripe1">
+Autoplay speed and direction:
+<input type="number" min="-10" max="10" value="0" onchange="setSpeed(this.value)">
+<br><br>
+
+<script>
+function setSpeed(value) {
+  test.dataset.dir = Math.sign(value);
+  test.dataset.stay = 6e3 / (1 + Math.abs(value));
+}
+</script>
+
+<ul id="test" class="carouhell" data-dir="0">
   <li><img src="assets/img1.jpg">
   <li><img src="assets/img2.jpg">
   <li><img src="assets/img3.jpg">
 </ul>
-<div id="stripe1"></div>
+
 </xmp>
 
 <script>

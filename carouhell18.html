@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Carouhell Effects - Media rule event</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: effects extension</b></p>
+<p>In this example, carouhell is turned on only on small screen below 600px width. The effects extension creates a hidden div classed <tt>css</tt> after the carouhell which can be accessed via <tt>.carouhell+.css</tt> selector. There you are expected to set its media rule opacity: when the opacity changes, 1ms transitionend event is fired and, if provided, <tt>mediaCSS(o)</tt> method is executed, where <tt>o</tt> is 10 times the current opacity as Integer (here, opacity 0.6 yields to 6). This is for safe and convenient comparison (you can't safely write <tt>if(o==0.6)</tt>).</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-effects.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+
+@media (min-width: 600px) {
+  .carouhell+.css { opacity: 0.6; }
+  .carouhell { width: 100%; height: auto; white-space: normal; margin: 0; padding: 0; }
+  .carouhell li { margin: 1em; width: 200px; height: 200px; }
+}
+</style>
+
+<ul id="test" class="carouhell" data-stay="2000">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+
+<script>
+test.mediaCSS = function(o) {
+  if(o==6) clearInterval(test.t);
+  else test.play();
+}
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

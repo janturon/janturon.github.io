@@ -1,11 +1,12 @@
-<h1>Carouhell - Adding items on the fly</h1>
+<link rel="stylesheet" href="src/style.css">
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p>This carouhell rotates two frames. Add a third one anytime you click the button which calls the client function <b>addImage()</b>. It is also recommended to watch the DOM realtime in browsers console.</p>
+<h1>Carouhell - Tiles</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
 
-<main id="main">
-</main>
+<p>The default styles center the images to fit the carousel contents, unless you set class <b>cover</b> somewhere to center, crop and cover all the related area. The images can be set as background or image elements, possibly nested in other elements. You can also nest list: the items distribute evenly into the free space. The free space is split horizontally unless you set class <b>column</b> to the nested list element (class <b>row</b> can override back in nested element). Finally, you can include text wrapped in element with class <b>stripe</b> to produce semitransparent black badge with white text at the bottom. Feel free to play with the styles: it should be very easy to understand and alter.</p>
+
+<main id="main"></main>
 
 <xmp id="xmp">
 <link rel="stylesheet" type="text/css" href="src/carouhell.css">
@@ -16,20 +17,26 @@
 .carouhell li { transition: 400ms; }
 </style>
 
-<script>
-function addImage(src) {
-  var li = document.createElement("li");
-  li.innerHTML = `<img src="${src}">`;
-  document.getElementById("test").appendChild(li);
-}
-</script>
-
-<button onclick="addImage('assets/img3.jpg');this.disabled=1">Add the third image</button>
-<br><br>
-
-<ul id="test" class="carouhell" data-stay="1000">
-  <li><img src="assets/img1.jpg">
-  <li><img src="assets/img2.jpg">
+<ul class="carouhell" data-stay="3000">
+  <li>
+  <ul class="cover">
+    <li style="background-image: url('assets/img1.jpg')"><a href="#" class="stripe">Tree one</a>
+    <li>
+    <ul class="column">
+      <li style="background-image: url('assets/img2.jpg')">
+      <li style="background-image: url('assets/img3.jpg')"><span class="stripe">Tree three</span>
+    </ul>
+  </ul>
+  <li>
+  <ul class="cover column">
+    <li style="background-image: url('assets/img1.jpg')"><a href="#" class="stripe">Tree one</a>
+    <li>
+    <ul class="row">
+      <li style="background-image: url('assets/img2.jpg')">
+      <li style="background-image: url('assets/img3.jpg')"><span class="stripe">Tree three</span>
+    </ul>
+  </ul>
+  <li style="background-image: url('assets/img2.jpg')"><span class="stripe">Tree two</span>
 </ul>
 </xmp>
 

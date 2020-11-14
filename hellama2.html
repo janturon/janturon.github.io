@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="src/style.css">
+
 <h1>Hellama - Autoremoving attributes</h1>
 <script src="src/script.js"></script>
 <script src="src/hellama.js"></script>
@@ -7,10 +9,10 @@
 	xmp:nth-of-type(2)::before { content: "JS config"; }
 	xmp:nth-of-type(3)::before { content: "HTML output"; }
 </style>
-<p><a href="/hellama.html">Back to Hellama</a></p>
+<p><a href="hellama.html">Back to Hellama</a></p>
 
 <p>After the processing, if the HTML contains opening hellama sequence, it will be removed. Therefore, if the hellama tag definition doesn't contain replacement (or contains null), it removes the attribute.</p>
-<p>In the example below, the <code>disabled</code> contains empty string, it is replaced and the attribute kept. The <code>className</code> contains null, it is not replaced and the attribute removed. The <code>style</code> is missing, so it is removed, too. The <code>hello</code> is also missing, but HTML contents is never removed, only replaced.
+<p>In the example below, the <tt>disabled</tt> contains empty string, it is replaced and the attribute kept. The <tt>className</tt> contains null, it is not replaced and the attribute removed. The <tt>style</tt> is missing, so it is removed, too. The <tt>hello</tt> is also missing, but HTML contents is never removed, only replaced.
 
 <xmp id="_src">
 <button id="test" disabled="{disabled}" class="{className}" style="{style}"> {hello} </button>

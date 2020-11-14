@@ -1,10 +1,17 @@
-<h1>Carouhell Buttons - buttons without scripting</h1>
+<link rel="stylesheet" href="src/style.css">
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<h1>Carouhell Buttons - Rotation direction</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
 
 <p><b>Requirements: button extension</b></p>
-<p>Attributes <b>data-left</b> and <b>data-right</b> can contain ID of elements which, if clicked, turns the carouhell leftwards and rightwards respectively. It is equivalent of calling <code>left()</code> or <code>right()</code> and then <code>pause()</code>.</p>
-<p>Similarly, you can also make click handler to <code>pause()</code> method by <b>data-pause</b> attribute and <code>play()</code> by <b>data-play</b>.</p>
+<p>Buttons extension introduces <tt>data-dir</tt> attribute to define the rotation direction:
+<ul>
+	<li>negative number to rotate leftwards (default)
+	<li>zero to stay
+	<li>positive number to rotate rightwards
+</ul>
+</p>
 
 <main id="main">
 </main>
@@ -14,21 +21,24 @@
 <script src="src/carouhell-with-buttons.js"></script>
 
 <style>
-.carouhell { width: 400px; height: 400px; background: gray; }
-.carouhell li { transition: 400ms; }
-.wrapper { display: flex; justify-content: center; align-items: center; }
-button { margin: 1em; padding: .5em; }
+.carouhell { height: 400px; margin: 0 auto; background: gray; }
+.carouhell { display: flex; flex-wrap: wrap; justify-content: space-evenly; }
+.carouhell li { width: 400px; height: 400px; transition: 200ms; }
 </style>
 
-<div class="wrapper">
-  <button id="B1left">&lt;</button>
-  <ul class="carouhell" data-left="B1left" data-right="B1right" onmouseover="this.pause()" onmouseout="this.play()">
-    <li><img src="assets/img1.jpg">
-    <li><img src="assets/img2.jpg">
-    <li><img src="assets/img3.jpg">
-  </ul>
-  <button id="B1right">&gt;</button>
-</div>
+<button onclick="test.dataset.dir=-1">Leftwards</button>
+<button onclick="test.dataset.dir=0">Stay</button>
+<button onclick="test.dataset.dir=+1">Rightwards</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-stay="3000" data-dir="-1">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
 
 </xmp>
 

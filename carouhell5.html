@@ -1,8 +1,13 @@
-<h1>Carouhell - Toggling between carouhell and ordinary list</h1>
+<link rel="stylesheet" href="src/style.css">
+<style>
+	ul:not(.carouhell) img { height: 200px; }
+</style>
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p>Clicking the button, toggle the off class on the list to toggle between ordinary list and carouhell. Adding the off class to carouhell means adding it to MutationObserver, calling its load function, but avoiding any effects until the class is removed.</p>
+<h1>Carouhell - Toggling between carouhell and list</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p>Clicking the button, toggle the off class on the list to toggle between ordinary list and carouhell. This is done by simply adding or removing the class <tt>carouhell</tt> to the list.</p>
 
 <main id="main">
 </main>
@@ -12,9 +17,8 @@
 <script src="src/carouhell.js"></script>
 
 <style>
-.carouhell:not(.off) { width: 400px; height: 400px; background: gray; }
+.carouhell { width: 400px; height: 400px; background: gray; }
 .carouhell li { transition: 400ms; }
-ul, img { max-width: 100%; box-sizing: border-box; }
 </style>
 
 <button onclick="test.classList.toggle('carouhell')">Toggle</button>
@@ -23,7 +27,6 @@ ul, img { max-width: 100%; box-sizing: border-box; }
 <ul id="test" class="carouhell">
   <li><img src="assets/img1.jpg">
   <li><img src="assets/img2.jpg">
-  <li><img src="assets/img3.jpg">
 </ul>
 
 </xmp>

@@ -1,0 +1,40 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Hellbox</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/hellbox.js">hellbox.js</a> (666 bytes)
+
+<p><b>Demo:</b> Click the image</p>
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  var curtain = document.createElement("div")
+  curtain.style.cssText = `position: fixed; top: 0; left: 0; z-index: 1; width: 100%; height: 100%;
+	background: rgba(0,0,0,0.5) none 50% 50%/contain no-repeat; display: none`
+  document.body.appendChild(curtain)
+  curtain.onclick = function() { curtain.style.display = "none" }
+  var boxes = document.getElementsByClassName("hellbox")
+  for(var i=0; i<boxes.length; ++i) boxes[i].addEventListener("click", function(e) {
+    e.preventDefault()
+    curtain.style.backgroundImage = "url('"+e.target.parentNode.href+"')"
+    curtain.style.display = "block"
+  })
+})
+</script>
+
+<a href="assets/img1.jpg" class="hellbox" target="_blank">
+  <img src="assets/img1-thumb.jpg">
+</a>
+</xmp>
+
+Download <a href="src/hellbox.js">hellbox.js</a>
+
+<script>
+	xmp2code(xmp, main);
+</script>

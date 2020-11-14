@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Carouhell Effects - opacity rotation</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: effects extension</b></p>
+<p>Effects extension provides abstraction over shift effect. It consists of these phases:</p>
+<ol>
+	<li>Custom function <tt>u.in(dir)</tt> is executed, where <tt>dir</tt>=-1 for left or +1 for right rotation. If the function is not provided, default rotation is performed. The function should change styles of the carouhell items to launch transition effect.
+	<li>The tt waits for transition effect to end.
+	<li>It is calculated how many items displays (1 by default, multiple in flex). One by one, first N items are moved to the end of the carouhell in leftwards rotation, or last N items to the beginning in rightwards rotation.
+	<li>Custom function <tt>u.out(dir)</tt> is executed. It should reset the styles. See the note below how to temporarily pause transition. If the function is not provided, all inline styles of all items are removed instead.
+</ol>
+<p>The above functions with +1 argument value are launched in <tt>right()</tt> carouhell method which is also defined in the Button extension. If you use also the Buttons extension, load it before this one.
+
+<p>If you want to temporarily pause transition. It is good to know <a href="note-transition.html">this</a>.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-effects.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: opacity 400ms; }
+</style>
+
+<ul id="test" class="carouhell" data-stay="2000">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+
+<script>
+  test.in = function(dir) {
+    test.children[1].style.cssText = "position: relative; left: -400px";
+    test.children[0].style.cssText = "position: relative; z-index: 1; opacity: 0"
+  }
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

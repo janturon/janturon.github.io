@@ -1,32 +1,31 @@
-<h1>Carouhell - Adding a carouhell into loaded page</h1>
+<link rel="stylesheet" href="src/style.css">
+<style>
+	ul:not(.carouhell) img { height: 200px; }
+</style>
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p>When you click the button, it copies the textarea's contents into the white box, where it turns to carouhell. That's all.</p>
+<h1>Carouhell - Turning any list into carouhell</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
 
-<main id="main"></main>
+<p>You can see an ordinary list. Click on the image to turn it into carousel. See the <tt>onclick</tt> in code below.</p>
+
+<main id="main">
+</main>
 
 <xmp id="xmp">
 <link rel="stylesheet" type="text/css" href="src/carouhell.css">
 <script src="src/carouhell.js"></script>
 
 <style>
-.carouhell { background: gray; }
+.carouhell { width: 400px; height: 400px; background: gray; }
 .carouhell li { transition: 400ms; }
+ul, img { max-width: 100%; box-sizing: border-box; }
 </style>
 
-<textarea id="src" style="width: 25em; height: 8em">
-<ul class="carouhell">
+<ul onclick="carouhell(this);this.removeAttribute('onclick')">
   <li><img src="assets/img1.jpg">
   <li><img src="assets/img2.jpg">
-  <li><img src="assets/img3.jpg">
 </ul>
-</textarea>
-
-<div id="tgt" style="display: inline-block; width: 200px; height: 200px; border: 1px solid black"></div><br>
-
-<button onclick="tgt.innerHTML = src.value; this.disabled=1">Copy into the white box</button>
-
 </xmp>
 
 <script>

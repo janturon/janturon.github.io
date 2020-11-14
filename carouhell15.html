@@ -1,0 +1,57 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Carouhell Stripe - stripe rotation</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: stripe extension</b></p>
+<p>To rotate the stripe, use <tt>sRotate(d)</tt> method, where negative <tt>d</tt> means rotating left and positive right. To rotate right, you will also need the buttons extension. If you need some custom tt after the stripe rotation, you can define <tt>shift</tt> stripe method, which fires after rotation.</p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-stripe.js"></script>
+
+<style>
+.carouhell { width: 400px; height: 400px; background: gray; }
+.carouhell li { transition: 400ms; }
+
+#stripe1 { width: 400px; height: 130px; padding: .2em 0; background: gray; }
+#stripe1 { display: flex; justify-content: center; align-items: center; }
+#stripe1 b { width: 100px; height: 100px; margin: 0 .2em; border-radius: .2em;
+          background: center/cover; opacity: 0.5; transition: 400ms; }
+#stripe1 b:nth-child(2) { opacity: 1; }
+#stripe1 b.active { width: 120px; height: 120px; }
+</style>
+
+<button onclick="test.left();test.sRotate(-1)">Rotate left</button>
+<br><br>
+
+<ul id="test" class="carouhell" data-load="this.shiftTo(1)" data-stripe="stripe1">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+</ul>
+<div id="stripe1"></div>
+
+
+<script>
+test.sItem = L => {
+  var b = document.createElement("b");
+  b.style.backgroundImage = `url(${L.children[0].src})`;
+  b.onclick = _=>test.shiftTo(L.i);
+  return b;
+}
+
+stripe1.shift = _ => {
+  stripe1.children[0].classList.remove("active");
+  stripe1.children[1].classList.add("active");
+}
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

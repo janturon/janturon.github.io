@@ -1,16 +1,13 @@
-((d,a,C,P,U)=>{
-carouhell=u=>{u[P].add(C)
-	u.left=L=>!u[P].contains(C)||(L=u.children).length>1&&
-	((L=L[0]).style.marginLeft=-L.offsetWidth+"px",L.ontransitionend=_=>{u.appendChild(L);L.style.marginLeft=0})
-	u.play=_=>(u.t=setInterval(u.left,u.dataset.stay||4e3))
-	setTimeout((function(X){eval(X)}).bind(u,u.dataset.load||"this.play()"))
+((D,C,P,O,N,M,F,U,K,S)=>{this[C]=u=>{K=u.children;S=u.dataset;u[P].add(C)
+	u.left=L=>u[P].contains(C)&&K[1]&&((L=K[0]).style[M]=-u[O]+"px",L[N]=_=>{L[N]=0;for(U=u[O]/L[O];U-->=1;)u.appendChild(K[0]);L.style[M]=0})
+	u.play=_=>(u.t=setInterval(u.left,S.stay||4e3))
+	setTimeout((function(X){eval(X)}).bind(u,S.load||"this.play()"))
 }
-U=_=>setTimeout(c=>{c=carouhell;[...d.getElementsByClassName(C)].forEach(c)
-	new MutationObserver(M=>M.forEach(m=>m.addedNodes.forEach(n=>(_=n[P])&&_.contains(C)?c(n):0)
-	)).observe(d,{subtree:1,childList:1})
+U=_=>setTimeout(c=>{c=this[C];[...D.getElementsByClassName(C)][F](c)
+	new MutationObserver(M=>M[F](m=>m.addedNodes[F](n=>(_=n[P])&&_.contains(C)&&c(n)))).observe(D,{subtree:1,childList:1})
 })
-d.readyState=="loading"&&!d[a]("DOMContentLoaded",U)||U()
-})(document,"addEventListener","carouhell","classList")
+D.readyState[0]=="l"?addEventListener("load",U):U()
+})(document,"carouhell","classList","offsetWidth","ontransitionend","marginLeft","forEach")
 
 carouhell=((f,d,a,c,k,A)=>(u,s,b,g,h,o,C,D,X,t,_)=>{f(u);C=u[c];u.i=0
 	o=_=>X.observe(u,{childList:1})

@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Note: Temporarily pause transition</h1>
+
+<p>Lets say you have a transition set on margin. If you run this tt
+
+<code>
+x.style.transition = "0s"; // turn off the default transition
+x.style.marginLeft = "-400px"; // transition effect occurs!
+x.style.transition = ""; // turn on the default transition
+</code>
+
+<p>then it shifts with transition effect. To optimize performance, browsers fetches all the style changes and then launch render function, so effectively the transition was never turned off. You can set a reasonable delay after transition is turned off (50ms should be enough), but it complicates the code and can introduce side effects. Depending on the rendering core, there may be events that enforces render. On webkit, focus() or reading offsetWidth are among them. So you can write an undelayed code:</p>
+
+<code>
+x.style.transition = "0s"; // turn off the default transition
+x.focus(); // enforces render
+x.style.marginLeft = "-400px"; // transition effect does not occur
+x.style.transition = ""; // turn on the default transition
+</code>

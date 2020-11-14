@@ -1,0 +1,11 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Note: Why to merge Carouhell extension files</h1>
+
+<p>The extensions (in any order) need to be loaded JUST AFTER the core code. The reason is that after the core is loaded, <tt>setTimeout()</tt> (without the second parameter) is used to delay the execution to wait for extensions to load. If the code is not in the browser's cache, it creates a separate HTTP request for each script. This usually takes several milliseconds, so the core loader is executed before the extensions are loaded. You can solve it by increasing the delay (to some 50-100 ms), but this will most likely cause you other nasty issuses. We could also wait for the <tt>DOMContentLoaded</tt> event which fires after all scripts are loaded. I opted not to for these reasons:</p>
+<ul>
+	<li><tt>"DOMContentLoaded"</tt> is a whopping 18 bytes, 2.7% of the 666 bytes long code. The extensions can add some useful feature or two instead of messing with this crazy identifier.
+	<li><tt>DOMContentLoaded</tt> is a busy place: most scripts just stays idle until the event occurs, and then everyone wants to do their job ASAP. Assembling extensions is not dependent on DOM, so we can do it sooner to level up the load and speed up the web. It is safe to use <tt>&lt;script async&gt;</tt> for carouhell load.
+	<li>It is handy if script can be lazy loaded on demand after the <tt>DOMContentLoaded</tt> event. Carouhell is prepared for this scenario, you can also use <tt>&lt;script defer&gt;</tt> for carouhell load.
+	<li>It is very easy to merge files by hand and it highly raises unwanted complexity to automate it. So just put the code into one physical file in any way you find appropriate. There's no need for another special in-built tool for that.
+</ul>

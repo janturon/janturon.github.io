@@ -1,40 +1,40 @@
-<h1>Carouhell Buttons - set rotation direction</h1>
+<link rel="stylesheet" href="src/style.css">
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
 
-<p><b>Requirements: button extension</b></p>
-<p>Buttons extension introduces <b>data-dir</b> attribute to define the rotation direction:
-<ul>
-	<li>negative number to rotate leftwards (default)
-	<li>zero to stay
-	<li>positive number to rotate rightwards
-</ul>
+<h1>Carouhell - fit into viewport width</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p>Carouhell can be tweaked to rotate as many pictures as fits into viewport. Add this CSS:
+<ol>
+	<li><tt>display: flex; flex-wrap: wrap; justify-content: space-evenly;</tt> to carouhell class
+	<li>fixed width to carouhell <tt>li</tt>item
+	<li>fixed height to both carouhell class and carouhell item
+	<li>set the transition duration low as the animation is jerky in slow shift
+</ol>
 </p>
+
+<p>Try to play with viewport width in the example below. The contents adjusts to fill 100% width.</p>
 
 <main id="main">
 </main>
 
 <xmp id="xmp">
 <link rel="stylesheet" type="text/css" href="src/carouhell.css">
-<script src="src/carouhell-with-buttons.js"></script>
+<script src="src/carouhell.js"></script>
 
 <style>
-.carouhell { height: 400px; display: flex; flex-wrap: wrap; justify-content: space-evenly; margin: 0 auto; background: gray; }
-.carouhell li { width: 400px; height: 400px; transition: 1000ms; }
+.carouhell { height: 300px; margin: 0 auto; background: gray; }
+.carouhell { display: flex; flex-wrap: wrap; justify-content: space-evenly; }
+.carouhell li { width: 300px; height: 300px; transition: 200ms; }
 </style>
 
-<button onclick="test.dataset.dir=-1">Leftwards</button>
-<button onclick="test.dataset.dir=0">Stay</button>
-<button onclick="test.dataset.dir=+1">Rightwards</button>
-<br><br>
-
-<ul id="test" class="carouhell" data-stay="3000" data-dir="-1">
+<ul id="test" class="carouhell" data-stay="2000">
   <li><img src="assets/img1.jpg">
   <li><img src="assets/img1.jpg">
-  <li><img src="assets/img2.jpg">
-  <li><img src="assets/img2.jpg">
   <li><img src="assets/img3.jpg">
   <li><img src="assets/img3.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img2.jpg">
 </ul>
 
 </xmp>

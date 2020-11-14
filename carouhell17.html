@@ -1,0 +1,45 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Carouhell Effects - opacity flex rotation</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
+
+<p><b>Requirements: effects extension</b></p>
+<p>This example extends <a href="carouhell14.html">the previous one</a>. Here we have a centered flex design of maximum width 1300px, so at most 3 items fits inside. You must guarantee that the number of items inside are at least twice the elements inside (6 in our case), or error occurs. The actual size is calculated in the <tt>size</tt> variable below. </p>
+
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<link rel="stylesheet" type="text/css" href="src/carouhell.css">
+<script src="src/carouhell-with-effects.js"></script>
+
+<style>
+.carouhell { max-width: 1300px; height: 400px; margin: 0 auto; background: gray; }
+.carouhell { display: flex; flex-wrap: wrap; justify-content: space-evenly; }
+.carouhell li { width: 400px; height: 400px; margin: 0 10px; transition: opacity 400ms; }
+</style>
+
+<ul id="test" class="carouhell" data-stay="2000">
+  <li><img src="assets/img1.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img2.jpg">
+  <li><img src="assets/img3.jpg">
+  <li><img src="assets/img1.jpg">
+</ul>
+
+<script>
+  test.in = function(dir) {
+    var size = Math.floor(test.offsetWidth/test.children[0].offsetWidth);
+    for(let i=0; i<size; ++i) {
+      test.children[size+i].style.cssText = "position: relative; top: -400px";
+      test.children[i].style.cssText = "position: relative; z-index: 1; opacity: 0";
+    }
+  }
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, main);
+</script>

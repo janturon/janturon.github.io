@@ -1,9 +1,11 @@
-<h1>Carouhell Stripe - stripe rotation</h1>
+<link rel="stylesheet" href="src/style.css">
 <script src="src/script.js"></script>
-<p><a href="/carouhell.html">Back to Carouhell</a></p>
+
+<h1>Carouhell Stripe - create stripe</h1>
+<p><a href="carouhell.html">Back to Carouhell</a></p>
 
 <p><b>Requirements: stripe extension</b></p>
-<p>To rotate the stripe, use <code>sRotate(d)</code> method, where negative <code>d</code> means rotating left and positive right. To rotate right, you will also need the buttons extension. If you need some custom code after the stripe rotation, you can define <code>shift</code> stripe method, which fires after rotation.</p>
+<p>The simplest use of stripe extension is to define <b>data-stripe</b> attribute containing ID of element where the stripe contents is generated and updated. By default, there is an empty <tt><b>&lt;b&gt;</b></tt> element for every frame in the carouhell and <tt><b>&lt;b&gt;</b></tt> at the position of currently active frame receives a class <b>active</b>.</p>
 
 <main id="main">
 </main>
@@ -16,39 +18,17 @@
 .carouhell { width: 400px; height: 400px; background: gray; }
 .carouhell li { transition: 400ms; }
 
-#stripe1 { width: 400px; height: 130px; display: flex; justify-content: center; align-items: center; background: gray; padding: .2em 0; }
-#stripe1 b { width: 100px; height: 100px; margin: 0 .2em; background: center/cover; opacity: 0.5; border-radius: .2em; transition: 400ms; }
-#stripe1 b:nth-child(2) { opacity: 1; }
-#stripe1 b.active { width: 120px; height: 120px; }
-
-
-.flex { display: flex; align-items: center; }
+#stripe1 { width: 400px; display: flex; justify-content: center; background: gray; }
+#stripe1 b::before { font-size: 2em; margin: 0 .5em; content: '•'; }
+#stripe1 b.active::before { color: white; }
 </style>
 
-<button onclick="test.left();test.sRotate(-1)">Rotate left</button>
-<br><br>
-
-<ul id="test" class="carouhell" data-load="this.shiftTo(1)" data-stripe="stripe1">
+<ul class="carouhell" data-stay="1000" data-stripe="stripe1">
   <li><img src="assets/img1.jpg">
   <li><img src="assets/img2.jpg">
   <li><img src="assets/img3.jpg">
 </ul>
 <div id="stripe1"></div>
-
-
-<script>
-test.sItem = L => {
-  var b = document.createElement("b");
-  b.style.backgroundImage = `url(${L.children[0].src})`;
-  b.onclick = _=>test.shiftTo(L.i);
-  return b;
-}
-
-stripe1.shift = _ => {
-	stripe1.children[0].classList.remove("active");
-	stripe1.children[1].classList.add("active");
-}
-</script>
 </xmp>
 
 <script>

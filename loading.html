@@ -1,8 +1,0 @@
-<h2>Why to merge extension files with the core and avoid DOMContentLoaded</h2>
-<p>The extensions (in any order) need to be loaded JUST AFTER the core code. The reason is that after the core is loaded, <code>setTimeout()</code> (without the second parameter) is used to delay the execution to wait for extensions to load. If the code is not in the browser's cache, it creates a separate HTTP request for each script. This usually takes several milliseconds, so the core loader is executed before the extensions are loaded. You can solve it by increasing the delay (to some 50-100 ms), but this will most likely cause you other nasty issuses. We could also wait for the <code>DOMContentLoaded</code> event which fires after all scripts are loaded. I opted not to for these reasons:</p>
-<ul>
-	<li><code>"DOMContentLoaded"</code> is a whopping 18 bytes, 2.7% of the 666 bytes long code. The extensions can add some useful feature or two instead of messing with this crazy identifier.
-	<li><code>DOMContentLoaded</code> is a busy place: most scripts just stays idle until the event occurs, and then everyone wants to do their job ASAP. Assembling extensions is not dependent on DOM, so we can do it sooner to level up the load and speed up the web. It is safe to use <code>&lt;script async&gt;</code> for carouhell load.
-	<li>It is handy if script can be lazy loaded on demand after the <code>DOMContentLoaded</code> event. Carouhell is prepared for this scenario, you can also use <code>&lt;script defer&gt;</code> for carouhell load.
-	<li>It is very easy to merge files by hand and it highly raises unwanted complexity to automate it. So just put the code into one physical file in any way you find appropriate. There's no need for another special in-built tool for that.
-</ul>

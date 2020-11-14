@@ -1,0 +1,53 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+<script src="src/hellswipe.js"></script>
+
+<h1>Hellswipe</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/hellswipe.js">hellswipe.js</a> (666 bytes)
+
+<p>Swipe the red box below, left or right. You can configure the drag threshold for swipe. Swiping is possible by mouse or finger. It is allowed to swipe back without lifting the button/finger, but it is not allowed to swipe multiple times the same direction during button/finger down.
+
+<p style="text-align: center">Swipe the box</p>
+<main id="main">
+</main>
+
+<xmp id="xmp">
+<style>
+  #box { width: 200px; height: 200px; background: red; }
+	#flex { display: flex; justify-content: space-evenly; align-items: center; }
+</style>
+
+<div id="flex">
+  <span>&lt;&lt;&lt; swipe left...</span>
+  <div id="box"></div>
+  <span>...swipe right &gt;&gt;&gt;</span>
+</div>
+drag: <input id="drag" readonly><br>
+swipe: <input id="swipe" readonly><br>
+
+<script>
+var x = 0, type = "unknown";
+
+const dragHandler = (src, d) => {
+  if(d.s==1) type = "finger";
+  if(d.s==2) type = "mouse";
+  if(d.s) x = d.x;
+  else drag.value = type + " " + (d.x - x);
+};
+
+const swipeHandler = (src, d) => {
+  swipe.value = type + " " + d.x;
+};
+
+const settings = {dx: 50, dt: 200};
+
+hellswipe(box, settings, swipeHandler, dragHandler)
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>

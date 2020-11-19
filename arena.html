@@ -21,26 +21,27 @@
 
 <script>
 a = A = s = S = b = 0, r = .017455
+t = "top", T = "Top", l = "left", L = "Left", O = "offset"
 onkeydown = e => keys(e.keyCode)
 onkeyup   = (e,k) => (k=e.keyCode, (k==37||k==39)&&(a=0), k==38&&(s=0))
 rotate    = (o,v) => (o.style.transform = `rotate(${v}deg)`)
 rotateR   = _=> rotate(R,A+=a)
 show      = (o,y) => o.style.display = y ? "inline-block" : "none"
 shown     = o => o.style.display=="inline-block"
-fire      = _=> (rotate(B,b=A), B.style.left=R.offsetLeft+"px", B.style.top=R.offsetTop+"px", show(B,1))
-keys      = k => k==37 && (a=-8) || k==39 && (a=+8) || k==38 && (s=+1) || k==32 && !shown(B) && fire()
+fire      = _=> (rotate(B,b=A), B.style[l]=R[O+L]+"px", B.style[t]=R[O+T]+"px", show(B,1))
+keys      = k => k==37&&(a=-8) || k==39&&(a=+8) || k==38&&(s=+1) || k==32&&!shown(B)&&fire()
 speed     = _=> ((s ? ++S : S>0 ? S-- : S), S>10 && (S=10))
-mover     = (o,d,s,f,t) => o.style[d.toLowerCase()] = o["offset"+d] + s*f (t*r) + "px"
-move      = (o,p,t) => (mover(o,"Left",p,Math.sin,t), mover(o,"Top",-p,Math.cos,t))
+mover     = (o,D,d,s,f,t) => o.style[d] = o[O+D] + s*f (t*r) + "px"
+move      = (o,p,x) => (mover(o,L,l,p,Math.sin,x), mover(o,T,t,-p,Math.cos,x))
 moveR     = _=> move(R,S,A)
 moveB     = _=> shown(B) && move(B,15,b)
-oob       = (o,x,y) => (x=o.offsetLeft, y=o.offsetTop, x<5 || x>380 || y<5 || y>380)
+oob       = (o,x,y) => (x=o[O+L], y=o[O+T], x<5 || x>380 || y<5 || y>380)
 gunLoad   = _=> shown(B) && oob(B) && show(B,0)
 less      = (a,b) => a<b
 more      = (a,b) => a>b
-bouncer   = (d,v,f) => f(R["offset"+d],v) && (R.style[d.toLowerCase()]=v+(f==less?5:-5)+"px")
-bouncer2  = d => bouncer(d,10,less) || bouncer(d,380,more)
-bounce    = _=> bouncer2("Top") && (A=180-A) || bouncer2("Left") && (A=-A)
+bouncer   = (D,d,v,f) => f(R[O+D],v) && (R.style[d]=v+(f==less?5:-5)+"px")
+bouncer2  = (D,d) => bouncer(D,d,5,less) || bouncer(D,d,380,more)
+bounce    = _=> bouncer2(T,t) && (A=180-A) || bouncer2(L,l) && (A=-A)
 
 
 launcher = fL => _ => fL.forEach(f => f())

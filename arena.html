@@ -1,0 +1,49 @@
+<meta charset="UTF-8">
+<style>
+	body { margin: 0; height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	main { position: relative; width: 400px; height: 400px; border: 1px solid black; }
+	#R { display: inline-block; position: absolute; left: 200px; top: 200px; transition: 30ms; }
+	#B { position: absolute; display: none; }
+</style>
+
+<header>
+	<h1>Arena Shooter</h1>
+	<b>controls</b> left, right, up, space
+</header>
+	<main>
+		<b id="R">A</b>
+		<b id="B">ı</b>
+	</main>
+<footer>
+	This game is created in pure functional style (no curly braces used, see the source).<br>
+	Made by Jan Turoň, 2020 as a proof-of-concept under <a href="http://www.wtfpl.net/about/">WTFPL</a>.
+</footer>
+
+<script>
+a = A = s = S = b = 0, r = .017455
+onkeydown = e => keys(e.keyCode)
+onkeyup   = (e,k) => (k=e.keyCode, (k==37||k==39)&&(a=0), k==38&&(s=0))
+rotate    = (o,v) => (o.style.transform = `rotate(${v}deg)`)
+rotateR   = _=> rotate(R,A+=a)
+show      = (o,y) => o.style.display = y ? "inline-block" : "none"
+shown     = o => o.style.display=="inline-block"
+fire      = _=> (rotate(B,b=A), B.style.left=R.offsetLeft+"px", B.style.top=R.offsetTop+"px", show(B,1))
+keys      = k => k==37 && (a=-8) || k==39 && (a=+8) || k==38 && (s=+1) || k==32 && !shown(B) && fire()
+speed     = _=> ((s ? ++S : S>0 ? S-- : S), S>10 && (S=10))
+mover     = (o,d,s,f,t) => o.style[d.toLowerCase()] = o["offset"+d] + s*f (t*r) + "px"
+move      = (o,p,t) => (mover(o,"Left",p,Math.sin,t), mover(o,"Top",-p,Math.cos,t))
+moveR     = _=> move(R,S,A)
+moveB     = _=> shown(B) && move(B,15,b)
+oob       = (o,x,y) => (x=o.offsetLeft, y=o.offsetTop, x<5 || x>380 || y<5 || y>380)
+gunLoad   = _=> shown(B) && oob(B) && show(B,0)
+less      = (a,b) => a<b
+more      = (a,b) => a>b
+bouncer   = (d,v,f) => f(R["offset"+d],v) && (R.style[d.toLowerCase()]=v+(f==less?5:-5)+"px")
+bouncer2  = d => bouncer(d,10,less) || bouncer(d,380,more)
+bounce    = _=> bouncer2("Top") && (A=180-A) || bouncer2("Left") && (A=-A)
+
+
+launcher = fL => _ => fL.forEach(f => f())
+rocket = [rotateR,speed,moveR,bounce,moveB,gunLoad]
+setInterval(launcher(rocket), 30)
+</script>

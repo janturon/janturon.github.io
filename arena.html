@@ -42,9 +42,7 @@ more      = (a,b) => a>b
 bouncer   = (D,d,v,f) => f(R[O+D],v) && (R.style[d]=v+(f==less?5:-5)+"px")
 bouncer2  = (D,d) => bouncer(D,d,5,less) || bouncer(D,d,380,more)
 bounce    = _=> bouncer2(T,t) && (A=180-A) || bouncer2(L,l) && (A=-A)
-
-
-launcher = fL => _ => fL.forEach(f => f())
-rocket = [rotateR,speed,moveR,bounce,moveB,gunLoad]
-setInterval(launcher(rocket), 30)
+launcher  = fL => _ => fL.forEach(f => f())
+rocket    = [rotateR,speed,moveR,bounce,moveB,gunLoad]
+onload    = _=> setInterval(launcher(rocket), 30)
 </script>

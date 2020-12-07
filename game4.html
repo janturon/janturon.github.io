@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+	body { margin: 0 auto; min-height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	main { position: relative; display: flex; justify-content: center; align-items: center; width: 400px; height: 400px; border: 1px solid black; }
+  xmp { background: #EEE; padding: 0 1em 1em 1em; }
+	header { max-width: 40em; color: #333; line-height: 1.4em; }
+  #Arena > * { position: absolute; }
+  #R { transition: 30ms; }
+</style>
+
+<header>
+	<h1>Arena Shooter tutorial</h1>
+  <h2>Step 4: Bullets</h2>
+  <p>Bullets are created dynamically by pressing <kbd>space</kbd>, they fly (implement <b>MovementDecorator</b>) until they crash to the wall of Arena (implement <b>CrashDecorator</b>). For generating bullets, we use <b>BulletFactory</b> (a <a href="https://en.wikipedia.org/wiki/Factory_(object-oriented_programming)">design pattern</a>), which needs a single parameter: the gun which launched the bullet (it is the Rocket). The bullet copies the angle from the gun in the moment of launch, and then moves until crash to the wall.
+  <p>There should be a dedicated object implementing <a href="https://en.wikipedia.org/wiki/Object_pool_pattern">Pool pattern</a> which takes responsibility for bullets behavior in the game and also implementing <a href="https://en.wikipedia.org/wiki/Mediator_pattern">Mediator pattern</a> to inform other object that they were hit. But since the gun needs the bullet information (it can shoot only one per time) and no other object interact with the bullet, the gun itself can be the pool and mediator is not needed. <a href="game.html">Back to the game</a>.
+</header>
+
+<main id="Arena">
+	<b id="R">A</b>
+</main>
+
+<xmp>
+CrashDecorator = o => {
+  o.hitBorderH = o.hitBorderV = d => (o.remove(), o.free(), o.crashed = 1);
+};
+
+BulletFactory = gun => {
+  var b = document.createElement("b");
+  b.innerHTML = "ı";
+  b.style.left = gun.style.left;
+  b.style.top = gun.style.top;
+  b.style.transform = gun.style.transform;
+  gun.parentNode.appendChild(b);
+  RenderDecorator(b);
+  MovementDecorator(b);
+  CrashDecorator(b);
+  b.angle = gun.angle;
+  b.speed = 15;
+  return b;
+};
+
+GunDecorator = (o,F) => {
+  o.bullet = null;
+  Keys.reserved.add(F);
+  o.register( _=> {
+    if(o.bullet?.crashed) o.bullet = null;
+    if(!o.bullet && Keys.down[F]) o.bullet = BulletFactory(o);
+  })
+};
+
+GunDecorator(R, 32);
+</xmp>
+
+<script>
+Keys = new function() {
+  this.down = [];
+  this.reserved = new Set;
+  addEventListener("keydown", e => (
+    this.reserved.has(e.keyCode) && e.preventDefault(),
+    this.down[e.keyCode]=1)
+  );
+  addEventListener("keyup",   e => this.down[e.keyCode]=0);
+};
+
+Render = new function() {
+  var handlers = new Set;
+  this.register = fn => handlers.add(fn);
+  this.remove = fn => handlers.delete(fn);
+  setInterval(_=> handlers.forEach(h => h()), 33);
+};
+
+RenderDecorator = o => {
+  o.updates = new Set;
+  o.register = fn => (o.updates.add(fn), Render.register(fn));
+  o.free = _=> (o.updates.forEach(Render.remove), o.updates.clear());
+};
+
+RotationDecorator = (o,L,R) => {
+  o.angle = 0;
+  Keys.reserved.add(L);
+  Keys.reserved.add(R);
+  o.rotate = delta => o.style.transform = `rotate(${o.angle+=8*delta}deg)`;
+  o.register(_ => (Keys.down[L] && o.rotate(-1), Keys.down[R] && o.rotate(+1)));
+};
+
+MovementDecorator = (o,U) => {
+  o.speed = 0;
+  o.angle = 0;
+  Keys.reserved.add(U);
+  o.register( _=> {
+    if(U) {
+      if(Keys.down[U]) o.speed+= o.speed>=10 ? 0 : 1;
+      else o.speed-= o.speed>0 ? 1 : 0;
+    }
+    o.style.left = o.offsetLeft + o.speed * Math.sin(o.angle * .017455) + "px",
+    o.style.top  = o.offsetTop  - o.speed * Math.cos(o.angle * .017455) + "px"
+  });
+};
+
+BorderHitDecorator = o => o.register( _=> [...o.children].forEach( C => (
+  C.offsetLeft < 5 && C.hitBorderH?.call(0,-1),
+  C.offsetLeft > o.offsetWidth - 15 && C.hitBorderH?.call(0,1),
+  C.offsetTop < 5 && C.hitBorderV?.call(0,-1),
+  C.offsetTop > o.offsetHeight - 15 && C.hitBorderV?.call(0,1)
+)));
+
+BounceDecorator = o => {
+  o.hitBorderH = d => (o.angle = - o.angle, o.rotate?.call(0,0), o.style.left = o.offsetLeft - 10*d + "px");
+  o.hitBorderV = d => (o.angle = 180 - o.angle, o.rotate?.call(0,0), o.style.top = o.offsetTop - 10*d + "px");
+};
+
+RenderDecorator(R);
+RotationDecorator(R, 37, 39);
+MovementDecorator(R, 38);
+
+RenderDecorator(Arena);
+BorderHitDecorator(Arena);
+BounceDecorator(R);
+
+var s = document.createElement("script");
+s.innerText = document.getElementsByTagName("xmp")[0].innerText;
+document.body.appendChild(s);
+</script>

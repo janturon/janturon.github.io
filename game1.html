@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+	body { margin: 0 auto; min-height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	main { display: flex; justify-content: center; align-items: center; width: 400px; height: 2em; border: 1px solid black; }
+  xmp { background: #EEE; padding: 0 1em 1em 1em; }
+	header { max-width: 40em; color: #333; line-height: 1.4em; }
+</style>
+
+<header>
+	<h1>Arena Shooter tutorial</h1>
+  <h2>Step 1: Game loop and keyboard</h2>
+  <p>Every game contains a program loop. Gaming frameworks hide it and provide only event handlers called in the loop, but here we create one in the <b>Render</b> object. We could use <a href="https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame">requestAnimationFrame</a>, but we work with slower framerate (30 FPS) which is enough for this kind of games and saves some power. Any object can register its method in the game loop by calling <tt>Render.register</tt> to be called every frame. We also need a <tt>Render.remove</tt> to remove a reference from game loop. This is needed for objects that are created dynamically and released after some time (bullets in our game). Without this, after the bullet is removed from the DOM, its registered method reference would still hang in Render object causing a <i>memory leak</i>. Read more about <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management">JS memory management</a>.
+  <p>Next, we need <b>Keys</b> object to fire immediately and continuously while key is pressed (keypress event has a delay after press, optimized to type text). Go ahead and try to push any combination of keys. It reads everything but <kbd>Fn</kbd> key, which is hardware driven. If you have gaming keyboard, it should handle any kombination of 6 keys. On my notebook keyboard, it can't read <kbd>D</kbd> if I push <kbd>W</kbd> and <kbd>S</kbd>. Here we need two arrows and space pushed together for good gaming experience, so I can't assign them to these particular keys. In the Keys object, we define <tt>reserved</tt> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set">Set</a> to prevent them to set the browser the default action. Here we reserve arrows Up, Down and Space (keycodes 38, 40, 32) to prevent them to scroll the page. Non-reserved keys (like F5) works as usual.
+  <p>Both these objects are passive, they are independent on the rest of the game and don't enforce any interface, so they can be reused anywhere.
+  <p>Try to push some keys to find out your keyboard functionality, be sure you understand the code behind and proceed to <a href="game2.html">step 2</a>.
+</header>
+<main id="Arena">
+</main>
+<xmp>
+Keys = new function() {
+  this.down = [];
+  this.reserved = new Set;
+  addEventListener("keydown", e => (
+    this.reserved.has(e.keyCode) && e.preventDefault(),
+    this.down[e.keyCode]=1)
+  );
+  addEventListener("keyup", e => this.down[e.keyCode]=0);
+};
+
+Render = new function() {
+  var handlers = new Set;
+  this.register = fn => handlers.add(fn);
+  this.remove = fn => handlers.delete(fn);
+  setInterval(_=> handlers.forEach(h => h()), 33);
+};
+
+Render.register( _=> (Arena.innerHTML="") ||
+  Keys.down.forEach( (v,k) => v && (Arena.innerHTML+= ' '+k) )
+);
+[32, 38, 40].forEach(key => Keys.reserved.add(key));
+</xmp>
+
+<script>
+var s = document.createElement("script");
+s.innerText = document.getElementsByTagName("xmp")[0].innerText;
+document.body.appendChild(s);
+</script>

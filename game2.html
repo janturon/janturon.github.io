@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+	body { margin: 0 auto; min-height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	main { display: flex; justify-content: center; align-items: center; width: 400px; height: 2em; border: 1px solid black; }
+  xmp { background: #EEE; padding: 0 1em 1em 1em; }
+	header { max-width: 40em; color: #333; line-height: 1.4em; }
+  #R { position: absolute; transition: 30ms; }
+</style>
+
+<header>
+	<h1>Arena Shooter tutorial</h1>
+  <h2>Step 2: Decorators, Game Object and Components</h2>
+  <p>DOM provides all objects needed to efficiently code a game, it is a fully suficient <i>game framework</i>. All we need is to <a href="https://en.wikipedia.org/wiki/Decorator_pattern">decorate</a> them.
+  <p>Our rocket will be <tt>&lt;b id="R"&gt;A&lt;/b&gt;</tt>, which is a <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> object capable of render itself within browser canvas. We need to promote it to something similar to <a href="https://unity.com/">Unity</a>'s <a href="https://docs.unity3d.com/ScriptReference/GameObject.html">GameObject</a>, object capable to perform in the game. For that, we use <b>RenderDecorator</b> below: if we need to remove it from the DOM, we need to call its <tt>free()</tt> method to remove its reference from Render object, and this is all we need (unlike class-based languages, JS doesn't have destructors).
+  <p>Features is added via <i>Components</i> in Unity. JS allows adding new properties to created objects (it is a <a href="https://en.wikipedia.org/wiki/Prototype-based_programming"><i>classless</i></a> OOP, albeit <a href="http://es6-features.org/#ClassDefinition">ES6</a> also supports classfull OOP), so we will add the features via decorators as well. For this, we will use <b>RotationDecorator</b> to rotate left and right, and <b>MovementDecorator</b> to move and slow down to stop at arbitrary direction.
+  <p>Now the left (keyCode 37), right (39) and speed up (38) works. To enable the movement, we also add <tt>position: absolute</tt> style to rocket element and <tt>transition: 30ms</tt> to smooth the transition between frames. Proceed to <a href="game3.html">step 3</a> to decorate the Arena.
+</header>
+
+<main id="Arena">
+	<b id="R">A</b>
+</main>
+
+<xmp>
+RenderDecorator = o => {
+  o.updates = new Set;
+  o.register = fn => (o.updates.add(fn), Render.register(fn));
+  o.free = _=> (o.updates.forEach(Render.remove), o.updates.clear());
+};
+
+RotationDecorator = (o,L,R) => {
+  o.angle = 0;
+  Keys.reserved.add(L);
+  Keys.reserved.add(R);
+  o.rotate = delta => o.style.transform = `rotate(${o.angle+=8*delta}deg)`;
+  o.register(_ => (Keys.down[L] && o.rotate(-1), Keys.down[R] && o.rotate(+1)));
+};
+
+MovementDecorator = (o,U) => {
+  o.speed = 0;
+  o.angle = 0;
+  Keys.reserved.add(U);
+  o.register( _=> {
+    if(U) {
+      if(Keys.down[U]) o.speed+= o.speed>=10 ? 0 : 1;
+      else o.speed-= o.speed>0 ? 1 : 0;
+    }
+    o.style.left = o.offsetLeft + o.speed * Math.sin(o.angle * .017455) + "px",
+    o.style.top  = o.offsetTop  - o.speed * Math.cos(o.angle * .017455) + "px"
+  });
+};
+
+RenderDecorator(R);
+RotationDecorator(R, 37, 39);
+MovementDecorator(R, 38);
+</xmp>
+
+<script>
+Keys = new function() {
+  this.down = [];
+  this.reserved = new Set;
+  addEventListener("keydown", e => (
+    this.reserved.has(e.keyCode) && e.preventDefault(),
+    this.down[e.keyCode]=1)
+  );
+  addEventListener("keyup",   e => this.down[e.keyCode]=0);
+};
+
+Render = new function() {
+  var handlers = new Set;
+  this.register = fn => handlers.add(fn);
+  this.remove = fn => handlers.delete(fn);
+  setInterval(_=> handlers.forEach(h => h()), 33);
+};
+
+var s = document.createElement("script");
+s.innerText = document.getElementsByTagName("xmp")[0].innerText;
+document.body.appendChild(s);
+</script>

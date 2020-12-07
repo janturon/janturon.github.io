@@ -1,6 +1,7 @@
 <meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
 <style>
-	body { margin: 0; height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	body { margin: 0 auto; height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
 	main { position: relative; width: 400px; height: 400px; border: 1px solid black; }
 	#R { display: inline-block; position: absolute; left: 200px; top: 200px; transition: 30ms; }
 	#B { position: absolute; display: none; }
@@ -17,6 +18,7 @@
 <footer>
 	This game is created in pure functional style (no curly braces used, see the source).<br>
 	Made by Jan Turoň, 2020 as a proof-of-concept under <a href="http://www.wtfpl.net/about/">WTFPL</a>.
+  <p><a href="/">Back to Hell-licensed code</a></p>
 </footer>
 
 <script>
@@ -26,7 +28,7 @@ less      = (a,b)         => a<b
 more      = (a,b)         => a>b
 onkeydown = e             => keys(e.keyCode)
 onkeyup   = (e,k)         => (k=e.keyCode, (k==37||k==39)&&(a=0), k==38&&(s=0))
-rotate    = (o,v)         => (o.style.transform = `rotate(${v}deg)`)
+rotate    = (o,v)         => o.style.transform = `rotate(${v}deg)`
 rotateR   = _             => rotate(R,A+=a)
 show      = (o,y)         => o.style.display = y ? "inline-block" : "none"
 shown     = o             => o.style.display=="inline-block"

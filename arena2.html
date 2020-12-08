@@ -1,0 +1,110 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+	body { margin: 0 auto; min-height: 100vh; display: flex; flex-flow: column; align-items: center; justify-content: space-evenly; font: 16px sans-serif; }
+	main { position: relative; display: flex; justify-content: center; align-items: center; width: 400px; height: 400px; border: 1px solid black; }
+	footer { max-width: 40em; color: #333; line-height: 1.4em; }
+  #Arena > * { position: absolute; }
+  #R { transition: 30ms; }
+</style>
+
+<header>
+	<h1>Arena Shooter</h1>
+	<b>controls</b> left, right, up, space
+</header>
+<main id="Arena">
+	<b id="R">A</b>
+</main>
+<footer>
+	This game is created in procedural style. Compare it to its <a href="game.html">OOP cousin</a>: it is less abstract and more straightforward to design. If some code repeats, we create a parametrized function for it. On the other hand, it does not scale: as the game grows, we add more global functions and global variables and the complexity grows. In OOP design, these functions and variables are wrapped in objects which are independent to the rest of the code. The complexity does not grow.<br><br>
+  Compare it to <a href="game.html">OOP style</a> and <a href="arena.html">functional style</a>.<br>
+	Made by Jan Turoň, 2020 as a proof-of-concept under <a href="http://www.wtfpl.net/about/">WTFPL</a>.
+  <p><a href="/">Back to Hell-licensed code</a></p>
+</footer>
+
+<script>
+// hardware
+var Keys = {
+  down: [],
+  reserved: new Set
+};
+Keys.reserved.add(32);
+Keys.reserved.add(37);
+Keys.reserved.add(38);
+Keys.reserved.add(39);
+
+addEventListener("keydown", e => (
+  Keys.reserved.has(e.keyCode) && e.preventDefault(),
+  Keys.down[e.keyCode]=1)
+);
+
+addEventListener("keyup",   e => Keys.down[e.keyCode]=0);
+
+// global functions
+function move(obj, speed, angle) {
+  obj.style.left = obj.offsetLeft + speed * Math.sin(angle * .017455) + "px";
+  obj.style.top  = obj.offsetTop  - speed * Math.cos(angle * .017455) + "px";
+}
+
+var outH = obj => obj.offsetLeft<5 || obj.offsetLeft>385;
+var outV = obj => obj.offsetTop<5  || obj.offsetTop>385;
+
+// rocket
+var rocketAngle = 0;
+var rocketSpeed = 0;
+function rocket() {
+  if(Keys.down[37]) rocketAngle-= 8;
+  if(Keys.down[39]) rocketAngle+= 8;
+  R.style.transform = `rotate(${rocketAngle}deg)`;
+
+  if(Keys.down[38] && rocketSpeed<10) rocketSpeed+= 1;
+  else if(!Keys.down[38] && rocketSpeed>0) rocketSpeed-= 1;
+
+  move(R, rocketSpeed, rocketAngle);
+  if(outH(R)) {
+    rocketAngle = - rocketAngle;
+    var d = R.offsetLeft<200 ? -1 : +1;
+    R.style.left = R.offsetLeft - 10*d + "px";
+    move(R, rocketSpeed, rocketAngle);
+  }
+  if(outV(R)) {
+    rocketAngle = 180 - rocketAngle;
+    var d = R.offsetTop<200 ? -1 : +1;
+    R.style.top = R.offsetTop - 10*d + "px";
+    move(R, rocketSpeed, rocketAngle);
+  }
+}
+
+// bullet
+var bulletAngle = 0;
+function createBullet() {
+  var b = document.createElement("b");
+  b.innerHTML = "ı";
+  b.style.left = R.style.left;
+  b.style.top = R.style.top;
+  b.style.transform = `rotate(${rocketAngle}deg)`;
+  bulletAngle = rocketAngle;
+  return b;
+}
+
+var B;
+function bullet() {
+  if(Keys.down[32] && !B) {
+    B = createBullet();
+    Arena.appendChild(B);
+  }
+  if(!B) return;
+  move(B, 15, bulletAngle);
+  if(outH(B) || outV(B)) {
+    B.remove();
+    B = null;
+  }
+}
+
+// game loop
+function gameLoop() {
+  rocket();
+  bullet();
+}
+setInterval(gameLoop, 33);
+</script>

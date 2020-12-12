@@ -1,0 +1,60 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  input { padding: .5em; font-size: 1.5em; }
+</style>
+<script src="src/script.js"></script>
+
+<header>
+  <h1>Matrix dot product</h1>
+  <p>To calculate matrix dot product (and to decently display it in the browser), you don't need anything but a few lines of code that fits into single page (HTML + CSS + JS). No external dependencies.
+</header>
+
+<div id="tgt">
+</div>
+
+<xmp id="xmp">
+<style>
+  main { display: flex; align-items: center; }
+  .matrix { margin: 0 1em; border-left: 1px solid black; border-right: 1px solid black; }
+  .matrix b { display: inline-block; width: 2em; text-align: center; }
+</style>
+
+<main>
+  <div class="matrix" id="A">[[1, 2], [2, 3], [3, 4]]</div>
+  &centerdot;
+  <div class="matrix" id="B">[[3, 2, 1], [4, 3, 2]]</div>
+  =
+  <div class="matrix" id="C"></div>
+</main>
+
+<script>
+  let MatrixProd = (A, B) =>
+    A.map((row, i) =>
+      B[0].map((_, j) =>
+        row.reduce((acc, _, n) =>
+          acc + A[i][n] * B[n][j], 0
+        )
+      )
+    )
+
+  let Matrixize = (M, fromSelf) => (
+    fromSelf && (M.value = eval(M.innerHTML)),
+    M.innerHTML = "",
+    M.value.forEach(r => (
+      r.forEach(c => M.innerHTML+= `<b>${c}</b>`),
+      M.innerHTML+= '<br>'
+    ))
+  )
+
+  Matrixize(A, true)
+  Matrixize(B, true)
+
+  C.value = MatrixProd(A.value, B.value)
+  Matrixize(C)
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, tgt);
+</script>

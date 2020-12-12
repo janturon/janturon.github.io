@@ -1,0 +1,37 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  input { padding: .5em; font-size: 1.5em; }
+</style>
+<script src="src/script.js"></script>
+
+<header>
+  <h1>Phone number input</h1>
+  <ul>
+    <li>allow <tt>+</tt> at the beginning
+    <li>otherwise allow only numbers and spaces
+    <li>add space after sequence of 3 numbers
+    <li>allow space after 1 or 2 numbers, too
+    <li>replace sequence of spaces by single space
+    <li>don't allow space after <tt>+</tt>
+  </ul>
+  <p>Consider <tt>pattern</tt> attribute to enforce specific format.
+</header>
+
+<main id="tgt">
+</main>
+
+<xmp id="xmp">
+<input oninput="this.value=phone(this.value)" placeholder="Your phone number...">
+
+<script>
+  const phone = i =>
+    i.replace(/(\d{3})(?![\s])(?=.)/g, '$1 ')
+     .replace(/(^\+)|[^0-9 ]/g, '$1')
+     .replace(/([\s\+])(\s+)/g, '$1')
+</script>
+</xmp>
+
+<script>
+	xmp2code(xmp, tgt);
+</script>

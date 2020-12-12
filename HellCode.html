@@ -6,11 +6,15 @@
 
 <ol>
  <li>gzip compress ratio for text is some 10%, so the actual code has hundreds of kilobytes - what a shame.
- <li>gzipping is cheating: JS interprets can't process gzipped code. It is a server feature compressing contents before sending it to client, which unzips it, and then processes. The HTTP protocol does this for you, so why to gzip it manually? Only to brag with lies about "tiny" and "lightweight". The opposite is true, unzipping further burdens your system, and server's, too. If you don't have client-server communication via HTTP (like opening HTML from disk using file:// protocol), you can't use gzipped code.
+ <li>gzipping is cheating: JS interprets can't process gzipped code, they need to unzip it before running.
+ <li>The internet browsing bottleneck moves from network traffic towards battery time, so focus should be moved from code size to code efficiency. Gzipping conceals the inefficiency in small size.
 </ol>
 
-<p>You can expose the bullshitery of minified and gzipped JS code by publishing under <a href="LICENSE.md">HELL license</a>. This means your code will be 666 bytes long, without minification, without gzipping, without external libraries and indented. Make a 666 bytes long clone of "minified and gzipped" code just to laugh out in the face of the original authors.
+<p>Intermediate coders code simple ideas in complex code (they create libraries and frameworks for intermediate coders).<br>
+Advanced coders code complex ideas in simple code (they don't need libraries, they pick the right language).<br>
 
-<p>Why to do this? Parkinson's law implies that any code that is not obvious on the first spot is doomed. Only the simplest ideas survive and the 666 bytes limit forces you not to add any expendable parts: anybody can learn 666 bytes code to the last bit in short time. It won't grow. If you absolutely need to add something, you also absolutely need to remove something, or else the complexity rises and the unavoidable end is coming.
+<p>If you want to code a library, you should do it in lower-level language. Same-level language increases the commands executed polynomically: every command translated into several library commands and every library command translates into several engine commands. In scripting language one should express only highly abstract simple ideas. To prove it, I challenge you to code it under <a href="LICENSE.md">HELL license</a>. This means your code will be 666 bytes long, without minification, without gzipping, without external libraries and indented.
+ 
+<p>Why to do this? Parkinson's law implies that any code that is not obvious on the first spot is doomed. Only the simplest ideas survive and the 666 bytes limit forces you not to add any expendable parts: anybody can learn 666 bytes code to the last bit in short time. It won't grow. If you absolutely need to add something, you also absolutely need to remove something else, or the complexity rises and the unavoidable end is coming.
 
-<p>All of our ideas are so simple, that we are able to explain it to anybody. If we are not able to, it means that we do not understand it deep enough. Complex codes are traits of those who don't understand it deep enough. The same amount of code you write you also have to delete. If you don't, the code constantly grows to the point of unsustainability.
+<p>All of our ideas are simple and they are connected in a simple way to other ideas. "Complex code" is nothing but merging the connections into the idea, not knowing its <i>essence</i>.

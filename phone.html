@@ -11,9 +11,11 @@
     <li>allow <tt>+</tt> at the beginning
     <li>otherwise allow only numbers and spaces
     <li>add space after sequence of 3 numbers
+    <li>minimize autospaces count
     <li>allow space after 1 or 2 numbers, too
     <li>replace sequence of spaces by single space
     <li>don't allow space after <tt>+</tt>
+    <li>keep cursor position if replacement happens
   </ul>
   <p>Consider <tt>pattern</tt> attribute to enforce specific format.
 </header>
@@ -22,13 +24,16 @@
 </main>
 
 <xmp id="xmp">
-<input oninput="this.value=phone(this.value)" placeholder="Your phone number...">
+<input oninput="phone(this)" placeholder="Your phone number...">
 
 <script>
-  const phone = i =>
-    i.replace(/(\d{3})(?![\s])(?=.)/g, '$1 ')
-     .replace(/(^\+)|[^0-9 ]/g, '$1')
-     .replace(/([\s\+])(\s+)/g, '$1')
+  const phone = (o,p) => (
+    p=o.selectionStart,
+    o.value = o.value
+     .replace(/(^\+)|[^0-9 ]|\s+(?=\s)/g, '$1')
+     .replace(/(\d)(\d{2})(?=\S)/g, (_,p1,p2,q) => p==q+1 ? p1+' '+p2 : (p++,p1+p2+' ')),
+    o.setSelectionRange(p,p)
+  )
 </script>
 </xmp>
 

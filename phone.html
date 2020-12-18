@@ -17,21 +17,21 @@
     <li>don't allow space after <tt>+</tt>
     <li>keep cursor position if replacement happens
   </ul>
-  <p>Consider <tt>pattern</tt> attribute to enforce specific format.
+  <p>Consider <tt>pattern</tt> attribute to enforce specific format on submit.
 </header>
 
 <main id="tgt">
 </main>
 
 <xmp id="xmp">
-<input oninput="phone(this)" placeholder="Your phone number...">
+<input oninput="phone()" placeholder="Your phone number...">
 
 <script>
-  const phone = (o,p) => (
-    p=o.selectionStart,
+  const phone = (e,o,p) => ( e=e||event, o=e.target, p=o.selectionStart,
     o.value = o.value
      .replace(/(^\+)|[^0-9 ]|\s+(?=\s)/g, '$1')
      .replace(/(\d)(\d{2})(?=\S)/g, (_,p1,p2,q) => p==q+1 ? p1+' '+p2 : (p++,p1+p2+' ')),
+    e.inputType=="deleteContentBackward" && p && o.value[p-1]==' ' && p--,
     o.setSelectionRange(p,p)
   )
 </script>

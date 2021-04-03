@@ -6,7 +6,7 @@ a { color: #0074D9; text-decoration: none; }
 a:hover, a:active, a:focus { color: #2ECC40; outline: 0 none; }
 a:focus { background: rgba(180,245,200,0.1); }
 p { text-align: justify; }
-xmp, tt { font-size: 0.8em; background: #EEE; }
-xmp { line-height: 1.1em; padding: 0 .5em .5em; }
-xmp::before { display: block; position: relative; top: -1.1em; content: "Source code"; margin: 2em 0 -1em; height: .5em; font-weight: bold; }
+pre, xmp, tt { font-size: 0.8em; background: #EEE; }
+pre, xmp { line-height: 1.1em; padding: 0 .5em .5em; }
+pre::before, xmp::before { display: block; position: relative; top: -1.1em; content: "Source code"; margin: 2em 0 -1em; height: .5em; font-weight: bold; }
 code { display: block; white-space: pre; }

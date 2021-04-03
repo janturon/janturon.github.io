@@ -1,0 +1,55 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  xmp.latte:before { content: "Latte encoding"; }
+</style>
+
+<h1>Roasting Iterators in Latte</h1>
+<p>It is just shocking how much misconception is rooted in Nette/Latte groupthink and iterator is one of the juiciest. Let's squeeze it.
+<h2>Nette hates global variables and static members</h2>
+<p>They promote the idea of radical far-right OOP fanatism, where global variables are <a href="https://doc.nette.org/en/3.1/dependency-injection">strictly prohibited</a>
+<blockquote>But haven't you heard that the use of global variables is bad? It's true, global variables are evil and static members are exactly the same.</blockquote>
+<p>PHP community is not that extreme, for the OOP application lifecycle is obviously different to client/server HTTP communication lifecycle. It offers OOP features, but also superglobal variables, home in every context, and first-class citizenship to functions and variables. PHP frameworks that ignore these features just picked wrong language, they should have used C# or Java.
+<p>They also attack static members, this is just too radical. Static members has its scope, they just exist for all the program lifecycle and have its place in OOP paterns.
+<p><b>Static members and global variables are not evil</b>. If you reject them in PHP, you just don't use the language properly. But if one breaks his own rules, he is a hypocrite. Let's see what Latte (View part of Nette) does with <a href="https://latte.nette.org/en/tags#toc-iterator">iterators</a>.
+<blockquote>Inside the foreach loop the $iterator variable is initialized. It holds important information about the current loop.</blockquote>
+<p>So they create a variable out of scope that is not even static. Since version 2.9 they even "enhance" it with <tt>$iterator->parent</tt> which contain reference to outer loop, if any. This is kind of feature envy antipattern, outer loop is none of the business of inner loop. To make this completely ridiculous, these objects are not iterators at all.
+
+<h2>Latte iterators are not iterators</h2>
+<p>See <a href="https://en.wikipedia.org/wiki/Iterator_pattern">Iterators on Wikipedia</a> (BTW as a Czech I feel shame how poorly are technical stuff explained on Czech Wikipedia, see <a href="https://cs.wikipedia.org/wiki/Iterator">Iterators on Czech Wikipedia (CZ)</a>). In short, iterators should have at least <tt>next()</tt> and <tt>hasNext()</tt> methods that shifts (and tests, respectively) the internal state of some container object to point to the next item, if any.
+<p>In Latte, they added <tt>nextKey</tt> and <tt>nextValue</tt>, but they use it just as state object:
+<xmp>
+{foreach($rows as $row):}
+  // $iterator is magically created here
+{/foreach}
+</xmp>
+
+<p>Iterator pattern would be correctly used like this:
+<xmp>
+{foreach($it = new Iterator($rows) as $row):}
+  // work with $it here
+{/foreach}
+</xmp>
+
+<h2>Is Latte really that bad?</h2>
+<p>No. Nothing is black or white. To me, Latte is just very dark gray. I like their idea of <tt>inner-</tt> attributes, especially <tt>inner-foreach</tt>. I see the syntax much easier to read than the conservative approach:
+
+<xmp>
+<ul>
+{foreach $items as $item}
+  <li>{$item}</li>
+{/foreach}
+</ul>
+</xmp>
+
+<xmp>
+<ul inner-foreach="$items as $item">
+  <li>{$item}</li>
+</ul>
+</xmp>
+
+<p>The latter is even HTML5 compatible. This syntax in inconsistent with the previous one and there should be more specialized template systems to optimize it.
+
+<p>There is also very sophisticated and precise error reporting in Latte (on the other hand it hardcodes Tracy instead of providing error interface).
+
+<p>All in all, I would not use Latte voluntarily in my projects, but for the features mentioned and for the fact that many developers choose it, the credit to Latte is well deserved.

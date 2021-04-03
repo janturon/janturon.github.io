@@ -1,0 +1,69 @@
+<meta charset="utf-8">
+<style>
+  #debugbar { position: fixed; bottom: .2em; z-index: 2; font-family: monospace; display: flex; width: calc(100vw - 40px); }
+  #debugbar summary { list-style: none; outline: 0; border: 1px solid black; padding: .2em .5em; cursor: pointer; background: linear-gradient(0, #DDD 0%, #FFF 100%); user-select: none; }
+  #debugbar > details[open] summary { background: linear-gradient(0, #FFF 0%, #DDD 100%); padding: .3em .5em .1em; }
+  #debugbar summary.bold { font-weight: bold; font-style: italic; color: #800; }
+  #debugbar > details:nth-child(n+2) summary { border-left: 0; }
+  #debugbar summary::-webkit-details-marker { display: none; }
+  #debugbar > details > div { position: absolute; right: 0; width: 100%; bottom: 2em; display: flex; flex-flow: row wrap; max-height: calc(100vh - 2em); }
+  #debugbar > details:not([open]) > div { opacity: .7; }
+  #debugbar > details > div > * { flex: 0 1 22%; min-width: 15em; max-width: 40em; border: 1px solid black; padding: .2em .5em; margin: .2em .2em .2em 0; background: #FFF; }
+</style>
+
+<div style="height: 110vh"></div>
+<div id="debugbar">
+<details>
+  <summary class="bold">Dumps</summary>
+  <div>
+    <div>contents with long text</div>
+    <div> yet another contents</div>
+  </div>
+</details>
+<details>
+  <summary>Session</summary>
+</details>
+<details>
+  <summary>Post</summary>
+</details>
+<details>
+  <summary>Asserts</summary>
+</details>
+<details>
+  <summary class="bold">Queries</summary>
+</details>
+<details>
+  <summary>Logs</summary>
+  <div>
+<p>Lorem ipsum dolor sit amet consectetuer dictum justo interdum Curabitur Vestibulum. Curabitur Phasellus laoreet aliquam dui tempor congue convallis condimentum justo justo. Maecenas a lacinia ligula mauris massa Vestibulum Duis pede eget Nam. </p>
+<p>Non et orci eu eros Curabitur sagittis ultrices gravida nunc nulla. Neque ornare enim porttitor Nam et turpis dis vel dolor libero. Cum et lorem semper mauris ante netus non Integer magna lacinia. Elit aliquet ligula pede tempus orci at Nullam montes elit Nulla. Et pede Nunc Maecenas enim euismod.</p>
+<p>Lorem ipsum dolor sit amet consectetuer dictum justo interdum Curabitur Vestibulum. Curabitur Phasellus laoreet aliquam dui tempor congue convallis condimentum justo justo. Maecenas a lacinia ligula mauris massa Vestibulum Duis pede eget Nam. </p>
+<p>Non et orci eu eros Curabitur sagittis ultrices gravida nunc nulla. Neque ornare enim porttitor Nam et turpis dis vel dolor libero. Cum et lorem semper mauris ante netus non Integer magna lacinia. Elit aliquet ligula pede tempus orci at Nullam montes elit Nulla. Et pede Nunc Maecenas enim euismod.</p>
+<p>Lorem ipsum dolor sit amet consectetuer dictum justo interdum Curabitur Vestibulum. Curabitur Phasellus laoreet aliquam dui tempor congue convallis condimentum justo justo. Maecenas a lacinia ligula mauris massa Vestibulum Duis pede eget Nam. </p>
+<p>Non et orci eu eros Curabitur sagittis ultrices gravida nunc nulla. Neque ornare enim porttitor Nam et turpis dis vel dolor libero. Cum et lorem semper mauris ante netus non Integer magna lacinia. Elit aliquet ligula pede tempus orci at Nullam montes elit Nulla. Et pede Nunc Maecenas enim euismod.</p>
+<p>Lorem ipsum dolor sit amet consectetuer dictum justo interdum Curabitur Vestibulum. Curabitur Phasellus laoreet aliquam dui tempor congue convallis condimentum justo justo. Maecenas a lacinia ligula mauris massa Vestibulum Duis pede eget Nam. </p>
+<p>Non et orci eu eros Curabitur sagittis ultrices gravida nunc nulla. Neque ornare enim porttitor Nam et turpis dis vel dolor libero. Cum et lorem semper mauris ante netus non Integer magna lacinia. Elit aliquet ligula pede tempus orci at Nullam montes elit Nulla. Et pede Nunc Maecenas enim euismod.</p>
+  </div>
+</details>
+<details>
+  <summary onclick="this.parentNode.parentNode.remove()">x</summary>
+</details>
+</div>
+<script>
+  [...debugbar.children].forEach((O,L,A,F) => (
+    F = o => o.tagName=="DETAILS" ? o : F(o.parentNode),
+    L = f => o => f(F(o.target)),
+    O.opened = O.open,
+    O.onmouseover = L(O => O.open=true),
+    O.onmouseout = L(O => !O.opened && (O.open=false)),
+    O.onclick = L(O => O.children[1] && (
+      O.opened=!O.opened,
+      O.children[1].style.opacity=O.opened?"1":"0.7",
+      O.children[1].style.zIndex=O.opened?"1":"0",
+      setTimeout(_=>O.open=O.opened)
+    )),
+    [...O.children].filter(e=>e.tagName!="SUMMARY").forEach(C =>
+      C.addEventListener("click", e => e.stopPropagation())
+    )
+  ))
+</script>

@@ -1,0 +1,27 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF architecture</h1>
+<p>OOP gained popularity over time as the best way to write complex applications. Yet it is not suitable for web backends. PHP is a <b>object capable</b> language, not <b>object oriented</b>: it supports objects creation, but the HTML assembling is a procedural task. To avoid confusion, lets define <b>procedural objects</b> as objects used in procedural paradigm that have these features: <i>Pseudonamespaces</i> are objects which are created in a single instance, serving as namespace with settings function (constructor). <i>Pawns</i> are objects created in multiple instances whose methods are not called externally.
+<p>OOP program, once started, models reality in some encoded way. It can run indefinitely and is stopped when the model is no longer needed. Procedural program is expected to end after certain amount of steps (it has its Time Complexity O). It is desirable to make it quick.
+<p>In OOP objects usually wait for events in idle state utilizing threads. In PHP assembling HTML everything is synchronous and program runs in a single thread.
+<p>In OOP there is no global state: every piece of information belongs to some object. PHP supports global functions and global variables. Even superglobal variables, shared in every context.
+<p>Now it should be obvious that <b>OOP Framework in PHP is misconception</b>. Therefore we abandon OOP architectonic patterns like MVC or MVP and create procedural architectonic pattern. PWF could also stand for <i>Procedural Web Framework</i>.
+
+<h2>Web backend</h2>
+<p>Hypertext preprocessing starts with TCP request. There are full duplex protocols like WS or MQTT, but for most webs, lets focus on HTTP. In its request-response lifecycle, the program starts with client's request and ends with server's response.
+<p>To start the program, we need <i>Endpoints</i> where the requests can land. PWF suggests you create some of these:
+<ul>
+  <li><b>GET Endpoint</b> where targets every link. The request is exclusively by HTTP GET method, it is the URI of the web domain. The endpoint parses it and delegates the processing to Page Container (HTML container mostly).
+  <li><b>POST Endpoint</b> where targets every form, usually by POST method. The endpoint processes the data, store the status for the Flash reporter and HTTP redirects to GET Endpoint (which also prevents resending the data by reloading the page).
+  <li><b>BG Endpoint</b> handles background HTTP requests from the same domain. The response is usually plain text (which may contain serialized objects in formats like CSV or JSON). It used to be called AJAX, but XML is seldom used for this type of communication today.
+  <li><b>REST Endpoint</b> is similar to BG Endpoint, but may handle cross-site requests, doesn't use SESSION (beeing stateless) and may implement also PUT and DELETE HTTP methods. It is meant to serve as standalone web service. It may utilize XML based data formats like SOAP.
+  <li><b>Ad-hoc Endpoint</b> has no general prescribed form. It is designed to adapt to external web services like O-Auth, GoPay, Captcha and others.
+</ul>
+<p>The general web workflow utilizing GET endpoint can be designed as follows. From the architectonic perspective, the endpoint code obtains HTTP request as input and produces formatted data output, which it sends to the right template.<br><br>
+<img src="assets/pwf-workflow.png">
+
+<br>
+<p>The arrows means <i>workflow</i> here: request causes response. Should we have <i>dependency</i> diagram, the arrows would face opposite direction: response depends on request. This is <i>Inversion of Control</i> pattern. Response should depend (directly or not) on everything. (If it doesn't depend on something, we can safely remove it from the system). Services are not dependent on the request-response workflow.
+<br><br>
+<p>In the <a href="pwf2.html">next step</a> we will discuss the endpoints details.

@@ -1,0 +1,28 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF Endpoints structure</h1>
+<p>The request is defined by HTTP method and HTTP data. HTTP data can be send in the form of URL path: in that case there is usually a tool that transforms the path into HTTP GET variables equivalent. PHP server conveniently parses the data into <tt>$_GET</tt> and <tt>$_POST</tt> superglobal arrays. The values can be only of type string, null (no value) or array of these values (if the name contains square brackets). The data consists of <b>request identifier</b> and <b>request parameters</b>. The identifier is a single variable or a function that transforms multivariable identifier to single variable. This is the key for validation metadata table, i.e.
+<xmp>
+[
+  "login" => ["email" => "string", "password" => "string"],
+  "setname" => ["value" => "string"],
+  "deposit" => ["value" => "int"]
+]
+</xmp>
+<p>These data should be file hardcoded: should they be provided by a service, no request could be made if the service is unavailable. Having the HTTP request and the validation metadata, we can automate the process of validating and have valid data or exception thrown for the next phase. This approach is not suitable for POST Endpoint, because of the need for client-side and server-side check coded twice the same way in HTML/Javascript and PHP respectively. One could generate the client-side code from the server side, but then the HTML could be produced only by this generator, which is too restraining (there are many external tools for that, unaware of this need). The solution for POST Endpoint could be form <b>name mangling</b>,
+<p>Then we perform consistency check (if needed), which is driven by similar table, but values are functions with set of <tt>assert()</tt> calls, redirecting the phase to error handler if something is not consistent. In this phase, calling external service like database is oftentimes needed.
+<p>If the request is valid and consistent, we perform data transaction: reading or writing data the request desires.
+<p>Then the workflow process depends on endpoint type:
+
+<ul>
+  <li><b>GET Endpoint</b> sends the data to Page Container, which is HTML template system most of the time.
+  <li><b>POST Endpoint</b> sends the data to Flash Reporter and performs redirect to GET Endpoint.
+  <li><b>BG and REST Endpoints</b> produces plain text data using <tt>fputcsv()</tt>, <tt>json_encode()</tt> and other functions of that kind.
+  <li><b>Ad-hoc Endpoint</b> acts as defined by external service.
+</ul>
+
+<p>Error handlers can process the error in a general way (logging, producing 4xx, 5xx error page), redirect to fallback endpoint or halt any response in case of attack.
+<br><br>
+
+<p>In the <a href="pwf4.html">final step</a> we will outline the Flash Reporter and the Page Container.

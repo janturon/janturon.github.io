@@ -1,0 +1,8 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF: Dumping variables</h1>
+
+<p><b>Native debugging</b> <tt>print_r</tt>, <tt>var_dump</tt> or <tt>var_export</tt> serves well in most cases. Native tools provide also <tt>debug_backtrack()</tt> stack dump providing context variables. It should also replace <tt>&lt;</tt> for <tt>&amp;lt;</tt> to display HTML source in the browser correctly. There are some nice and widely customizable tools like <a href="https://tracy.nette.org/en/">Tracy</a> also providing tuning information, but also caching over a hundred kB output in every page load, consuming signifficant resources.
+
+<p>In cases when one just needs to quickly dump variables in readable form, there is a <a href="src/dump.php">dump()</a> function, wrapping the output in <tt>&lt;div class="dump"></tt> to be styled to coder's taste.

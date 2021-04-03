@@ -1,0 +1,29 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Zen</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Zen is yet another PHP template system (TS) focused on keeping maximum functionality from other TS while adding minimum own syntax (using all the features of PHP as TS) with the simplest possible code. Every programmer can write complicated code, but if you learn, you need to code less and less, until you write simple code. This is the Zen philosophy of coding.
+<p>It is, of course, hell licensed, having 666 bytes code <a href="http://janturon.cz/load.php?file=zen&source">zen.php</a> with basic functionality. It has many extensions (and you can easily add your own) in <a href="http://janturon.cz/load.php?file=zen_ext&source">zen-ext.php</a> (it has under 3 kB commented code). Just for fun, there is also the core of the system (merely replacing curly braces for php tags and interpreting the PHP code) in <a href="http://janturon.cz/load.php?file=zen0&source">zen0.php</a> having just 98 bytes.
+<p>If you are familiar with PHP, it will take you some 10 minutes max to learn all about Zen in the following tutorial. To use it on your own server, start with this
+
+<xmp>
+<?php
+include "zen.php";
+include "zen_ext.php";
+echo zen("yourTemplate.zen");
+?>
+</xmp>
+
+and learn the features you can use in zen files:
+
+<h2>Zen Tutorial</h2>
+<ul>
+	<li><a href="http://janturon.cz/zen/test.php?file=01-output">01: Basic output</a>
+	<li><a href="http://janturon.cz/zen/test.php?file=02-skip-empty">02: Skip empty</a>
+	<li><a href="http://janturon.cz/zen/test.php?file=03-control">03: Control structures</a>
+	<li><a href="http://janturon.cz/zen/test.php?file=04-filters">04: Filters</a>
+	<li><a href="http://janturon.cz/zen/test.php?file=05-blocks">05: Blocks</a>
+	<li><a href="http://janturon.cz/zen/test.php?file=06-utilities">06: Utilities</a>
+</ul>

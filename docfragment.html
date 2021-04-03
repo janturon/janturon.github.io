@@ -1,0 +1,81 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>DocFragment</h1>
+<p>If one wants to create a HTML parser, there is a <a href="https://www.php.net/manual/en/domdocument.loadhtml.php">DOM Document</a>, which is hard to compete with in PHP without FFI. It is written in C using pointers which are not available in PHP 8. There is a brave competitior <a href="https://simplehtmldom.sourceforge.io/">Simple HTML DOM Parser</a> with a handfull of easy-to-use functions and a dull competitor <a href="https://latte.nette.org/en/">Latte</a> which uses regular expressions to parse non-regular language of HTML.
+<p>Interestingly, all mentioned parsers are written using object in non-OOP languages. In this century OOP became so popular that procedural style is almost considered antipattern on higher level. To illustrate the advantages of procedural style, DocFragment is written as a single easy-to-understand function without recursion in below 10 kB code (half of it are comments).
+
+<h3>Code size comparison</h3>
+<img style="float: right" src="assets/srcdom.png">
+<div style="float: left; width: 45%">
+<ul>
+	<li><b>DOMDocument</b> 347 kB (C)
+	<li><b>DocFragment</b> 8.5 kB
+	<li><b>Simple HTML DOM</b> 58 kB
+	<li><b>Latte</b> 84 kB
+</ul>
+<p>DOMDocument source includes XML parsing, which is a great deal of extra effort. Latte is a full template system from which only the parser was considered (they call it "Compiler", OMG). Since Simple HTML DOM is not so eagerly commented, it is fair to say that procedural style takes some 1/10 code size of its OOP counterparts here.
+</div>
+<br clear="all">
+
+<h3>Performance Comparison</h3>
+<p>To test DOM Parses, following snippet was used:
+<xmp>
+<ul>
+  <li>one
+  <li>two
+</ul>
+</xmp>
+<p>The parsing time is negligible among all DOM Parsers, however there are huge differences in memory usage:</p>
+<img style="float: right" src="assets/memdom.png">
+<div style="float: left; width: 45%">
+<ul>
+	<li><b>DOMDocument</b> 1.7 kB (C)
+	<li><b>DocFragment</b> 104 kB
+	<li><b>Simple HTML DOM</b> 630 kB
+	<li><b>Latte</b> 1 140 kB (970 kB with "cache" used)
+</ul>
+<p>Since PHP doesn't have pointers, PHP without FFI can't get any close to native C++. Yet DocFragment is still 10 times better than Latte, which uses some 1 MB of memory to render two list items (some 400 kB more for the first call when the PHP code to generate the HTML output is not generated).
+</div>
+<br clear="all">
+
+<h2>DocFragment is HTML parser, not XML parser</h2>
+<p>Many authors implementing XML parser also try to add HTML support and vice versa. <b>This is very bad design idea.</b> The misleading assumption might be <i>HTML is just XML with a few modification</i>. No. XML is designed for formatted data transfer, HTML is designed for web pages. In the past unification effort was made in XHTML standard, which might be still useful for webs focused on tabular data, but today almost exclusively HTML5 is used. HTML5 is more difficult to parse  aimed to remove boilerplate code from webs. DocFragment is HTML5 parser, but some features of HTML5 are generally bad idea and DocFragment intentionally rejects them, see the list:
+<ul>
+	<li><b>Self-closing tags for void elements</b> required in XML, optional in HTML5 and DocFragment
+	<li><b>Optional end tags</b> forbidden in XML, <a href="// https://html.spec.whatwg.org/multipage/syntax.html#optional-tags">standardized in HTML5</a>, supported in DocFramgent
+	<li><b>Non-quoted attributes</b> forbidden in XML, allowed in HTML5, forbidden in DocFragment as it leads to insane code espacially in template systems
+	<li><b>Boolean attributes with no value</b> forbidden in XML, allowed in HTML5 and DocFragment
+	<li><b>Node-types</b> (<a href="https://dom.spec.whatwg.org/#dom-node-nodetype">standard numbers</a>) applies for XML; <a href="https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType">5, 6 and 12 are deprecated</a> in HTML5; In DocFragment, 4 is allocated for <tt>style</tt>, <tt>script</tt> and <tt>xmp</tt>, 5 to 7 and 11, 12 are not supported and reserved for extensions, 2 is reserved and unused since attributes are stored in node array instead (note that <tt>xmp</tt> is deprecated since 1997 in HTML 3.2, but still usefull and fully supported)
+	<li><b>DTD</b> defined for XML and HTML4, HTML5 is too permissive to be described by DTD, DocFragment doesn't check nodes and attributes context at all, leaving it for extensions
+	<li><b>Namespaced nodes and attributes</b> supported in XML, HTML5 and DocFragment
+	<li><b>Misnested tags</b> forbidden in XML, <a href="https://www.w3.org/TR/html52/syntax.html#an-introduction-to-error-handling-and-strange-cases-in-the-parser">recommended to autofix</a> in HTML5, not allowed in DocFragment
+</ul>
+
+<h2>Data structure</h2>
+<p>The <tt>$data</tt> from the call below is a data object of <tt>Element</tt> class with no methods and following properties:
+<xmp>
+$data = DocFragment($htmlString);
+</xmp>
+
+<ul>
+	<li><tt>paired</tt>: (int) 0 for text nodes and void elements, 1 for paired elements, 2 for paired elements with omitted closing tag
+	<li><tt>type</tt> (int) 1 = Element, 3 = Text, 4 = CDATA element (style, script or xmp), 8 = Comment, 9 = root, 10 = DOCTYPE
+	<li><tt>name</tt> (string) element name, empty string for non-element nodes
+	<li><tt>atts</tt> (array of strings) attributes for node type 1, 4, 10; empty array for other node types. The keys are node names, the values node values. The values has to be enclosed in double quotes. HTML5 standard <a href="https://dev.w3.org/html5/spec-LC/syntax.html#unquoted">allows unquoted or single-quoted</a> attributes, but it is insane to do so in template systems.
+	<li><tt>outer</tt> (array of ints) The values is starting and ending index of the node in the original <tt>$htmlString</tt>. Nothing is copied, do it in your extension if you wish.
+	<li><tt>inner</tt> (array of ints) The starting and ending index of paired elements. In other node types, the values of these two ints are undefined.
+	<li><tt>children</tt> (array of Elements) Non-empty only for non-empty paired elements.
+</ul>
+
+<h2>How the DocFragment function works</h2>
+<p>It creates a root Element and parses the <tt>$htmlString</tt> byte by byte. It changes internal state derived from current state and byte read: for example if we read <tt>&lt;</tt> in text state, it switches to element name reading state which lasts until non-alhabetic character is read. It uses stack to remember the parent node. It copies only attributes, not the contents. This allows O(n) time complexity and O(n) memory complexity.
+
+<h2>ElementBuilder</h2>
+<p>This extension of <tt>Element</tt> class allows DOM manipulation. It adds <tt>parent</tt> property allowing to climb up the tree, <tt>modified</tt> which is set when the attributes is changed or some children added, removed or replaced and <tt>scratched</tt> properties when some of its children changed (it bubbles up: changed children scratch theit ancestors up to the root). This allow rapid rendering:
+<ul>
+	<li>if the node is neither scratched nor modified, it can be rendered by copying its <tt>outer</tt> boundaries from <tt>$htmlString</tt>
+	<li>if the node is modified but not scratched, it is rebuilt, but its children can be rendered by copying its <tt>inner</tt>boundaries
+	<li>if the node is not modified but scratched, its attributes are not rebuilt but copied from starting <tt>outer</tt> boundary to starting <tt>inner</tt> boundary (only paired elements can be scratched)
+	<li>only if the node is scratched and modified, it needs to be rebuilt wholly
+</ul>

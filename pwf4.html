@@ -1,0 +1,288 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF Template system</h1>
+<p>Let's sort template systems (TS) into following classes:</b>
+<ul>
+	<li><b>Native</b> don't add any syntax, just organizes structure and defines patterns to use existing syntax for template purposes (like Plates). These are the cleanest way to implement templates, but oftentimes require some boilerplate.
+	<li><b>Low Level</b> are witten as a module to web server (usually in the form of dll library written in C or C++) providing new syntax for its scripting wrapper (in case of PHP written as PECL extension). These removes native boilerplates, but requires more privileges and experience to install.
+	<li><b>Transpiler</b> adds own scripting syntax to be transpiled into scripting language processed by webserver. It allows to mix HTML with additional syntax removing boilerplates at cost of another layer of abstraction. These are by far the easiest to learn and write, so it is the biggest class. Let's divide it further:
+	<ul>
+		<li><b>Curly braces based</b> Add new syntax into curly braces. Systems using <tt>&lt;%</tt> ... <tt>%&gt;</tt> leads to angle brackets hell, so let's omit them entirely.
+		<li><b>XSL based</b> Produce valid html code with tags and attributes interpreted by TS.
+	</ul>
+	<li><b>DOM</b> The server sends only data, the client renders them. PWA fat clients utilize this TS class and it will be discussed separatedly.
+</ul>
+
+<p>For thin clients it is good to start without TS and add it only at the point when it is obvious that adding it will reduce coding efforts. Then it is good to use native language constructs until it is obvious that it needs to simplify. Then you will see what features you need and what you need not and pick the best fitting TS accordingly. Then it takes least effort to pick some transpiler until the performance needs to be improved. But frankly I haven't met a web where server-based TS needed performance boost. Funny thing: most TS brag as "lightweight", "fast" and "secure", and none of these features are relevant to TS. Those calling transpillers lightweight obviously never met C++. 20ms web load latency is the threshold when sensitive users can notice anything and all TS are at least by a magnitude faster than that. Microoptimization on this level is not needed and brings unwanted complexity for no benefit. Security can't be solved in TS realm, which I describe in detail on Latte example <a href="xss.html">here</a>.
+<p>The way from native to transpiler TS based on PHP language (most popular server-side web language) follows.
+
+<h1>Native PHP based TS</h1>
+<p>It can be used in a way following these rules:
+
+<ol>
+  <li><tt>short_open_tags On</tt> to make php opening mark short enough to be usable for templates
+  <li>only <tt>for</tt>, <tt>foreach</tt>, <tt>while</tt>, <tt>if</tt> and their <tt>end-</tt> closing constructs should be used in templates
+  <li>no <tt>echo</tt>, just <tt>&lt;?=</tt> instead
+  <li>opening and closing php marks should be on the same line
+  <li>every line is plain PHP or plain HTML, but not both, except for <tt>&lt;?=</tt>
+</ol>
+<p>The angle brackets flood is hard to read. Based on the use cases below let's try to find the optimal way to mix HTML syntax and TS syntax. Either the syntax should be easy to spot and separate (many TS opt for curly braces), or it should integrate into HTML in a way XSL does.
+
+<h3>1. Autoremove empty elements</h3>
+<xmp class="php">
+<?if(!empty($items)):?>
+  <ul>
+  <?foreach($items as $item):?>
+    <li> <?=$item?>
+  <?endforeach?>
+  </ul>
+<?endif?>
+</xmp>
+<p>It is usually undesirable to have empty HTML containers on the web, but there are exceptions. The autoremoval of such containers should be default, there should be an option to keep empty containers. Plain PHP syntax needs <tt>if-foreach</tt> pair, well-designed TS should have the functionality in a single expression.
+<p>To achieve that on PHP level, we can postprocess the generated output:
+<ol>
+	<li>Place a keep-empty indicator inside element (like <tt>§keepempty§</tt> in the snippet above)
+	<li>Find and remove empty elements using regular expressions (those containing keep-empty indicator are not empty)
+	<li>Remove keep-empty indicator
+</ol>
+<xmp class="php">
+<ul>§keepempty§
+<?foreach($items as $item):?>
+  <li> <?=$item?>
+<?endforeach?>
+</ul>
+
+// postprocessing
+$removeEmptyTags = fn($html) => preg_replace('~<([^\s!>]+)[^>]*>\s*</\1>~s','',$html);
+$data = $removeEmptyTags($data);
+$data = str_replace("§keepempty§","",$data);
+</xmp>
+
+<h3>2. Add/Autoremove attributes</h3>
+<xmp class="php">
+1) using if
+<input name="phone" <?if($cond):?>required<?endif?>>
+<input name="phone" <?if($placeholder):?>placeholder="<?=$placeholder?>"<?endif?>>
+
+2) using operators
+<input name="phone" <?=$required??""?>>
+<input name="phone" <?=$placeholder?"placeholder=\"$placeholder\"":""?>>
+</xmp>
+<p>HTML5 boolean attributes are set if present, even in confusing syntax like empty values (<tt>required=""</tt>) or string false values (<tt>required="false"</tt>) which acts the same way like value-free attributes (<tt>required</tt>). Therefore attributes with empty values should be always autoremoved and only value-free variant should be used for boolean attributes. This automation is not possible in XML compatible format where value-free attributes are not valid, but we will focus on HTML5. To add a boolean attribute doesn't lead to easy-to-read syntax in either case in the PHP snippet above. It also leaves a redundant space in the tag context, which is only an aesthetical detail not affecting the code interpretation.
+<p>The syntax above can be made readable using postprocessing like in removing empty tags.
+<xmp class="php">
+<input name="phone" <?=implode(" ",$boolAtts)?>>
+<input name="phone" placeholder="<?=$placeholder?>">
+
+// postprocessing
+$removeEmptyAtts = fn($html) => preg_replace('/(\s*\w+="\s*")/','',$html);
+$data = $removeEmptyAtts($data);
+</xmp>
+<p>The replacement should be made only in tag context. Either we can ignore it assuming <tt>attr="value"</tt> non-existent in text context, or we can replace use HTML entity <tt>&#61;</tt> as the equation sign in text context.
+
+<h3>3. Autoescape output</h3>
+<xmp class="php">
+<?=htmlspecialchars($output)?>
+</xmp>
+<p>The output should be autoescaped by default. TS should provide a way not to escape, though. Considering HTML5 output, to secure handle untrusted data:
+<ol>
+  <li>In text context, <tt>&lt;</tt> needs to be replaced with <tt>&amp;lt;</tt>
+  <li>In tag attribute context and script string context, html entity should replace the value delimiter (<tt>"</tt> or <tt>'</tt>) with a note that script invoking attributes <tt>on-</tt>, <tt>href</tt>, <tt>action</tt> and <tt>src</tt> needs to be avoided
+  <li>In script context and tag context, no untrusted data can be safely placed, as the exploit possibilities are so vast here that it is virtually unfeasible to secure it by mere syntax analysis.
+</ol>
+<p>In case 1 and 2, <tt>htmlspecialchars</tt> should be enough to protect from XSS. Keep in mind that <tt>accesskey</tt> attribute can trigger <tt>onclick</tt> event on most attributes (good one for XSS attack is <tt>V</tt> as it is oftentimes pressed by mistake trying to paste with <tt>Ctrl+V</tt> or trying to insert @ with <tt>Ctrl+Alt+V</tt>).
+<p>To avoid calling <tt>htmlspecialchars</tt> multiple times, untrusted data can be preprocessed in array:
+<xmp class="php">
+// preprocessing
+array_walk($untrusted, "htmlspecialchars");
+</xmp>
+
+<h3>4. Build class attribute</h3>
+<xmp class="php">
+<input name="phone" class="<?=implode(" ",$classData)?>">
+</xmp>
+<p>The PHP syntax readable here. The removal of empty class attribute was solved above.
+
+<h3>5. Conditional output</h3>
+<xmp class="php">
+<?if($cond):?>
+  <div>oh yea!</div>
+<?else:?>
+  <div>hell no!</div>
+<?endif?>
+</xmp>
+<p>The PHP syntax is decent here and TS could gracefully use it without adding its own. The ugly example is XSL here: two levels of nesting for a simple <tt>if-else</tt> construct is just too much (four levels for condition inside of condition).
+<xmp>
+<xsl:choose>
+  <xsl:when test="$cond">
+    <div>oh yea!</div>
+  </xsl:when>
+  <xsl:otherwise>
+    <div>hell no!</div>
+  </xsl:otherwise>
+</xsl:choose>
+</xmp>
+
+<h3>6. Iteration</h3>
+<xmp>
+<?foreach($items as $item):?>
+  <span class="flash"><?=$item?></span>
+<?endforeach?>
+</xmp>
+<p>Again: the PHP syntax works well and there is no shame for TS to delegate it to PHP. It could come in hand to add some more information to the iteration: how many items are there, is the item first or last, what is the order of the item in the list.
+
+<h3>7. Reusable parametrized blocks</h3>
+<xmp>
+<?ob_start()?>
+  <h2><?=$title?></h2>
+<?$h2=ob_get_clean()?>
+</xmp>
+<p>PHP with its output control handles this task in surprisingly readable syntax. TS can make the parameters local.
+
+<h3>8. Includes</h3>
+<xmp>
+<?include "somefile"?>
+</xmp>
+<p>In one way or another, the TS will use the PHP functionality here. Also here can TS send some local variables to the include.
+
+<h2>Conclusion</h2>
+<p>For the observed use-cases, native PHP TS with readable syntax can be achieved with preprocessing and postprocessing one-liners:
+<xmp>
+// preprocessing
+array_walk($untrusted,"htmlspecialchars");
+
+// postprocessing
+$template = preg_replace(['~<([^\s!>]+)[^>]*>\s*</\1>~s',\s*\w+="\s*")/','§keepempty§'],'',$template);
+</xmp>
+<p>The separation of <tt>$untrusted</tt> data from trusted <tt>$data</tt> increases security: the client coder knows where he works with what. With the single call of greedy <tt>preg_replace</tt> the code is much faster than any TS can dream of, albeit the speed is a little concern here. The drawback is the need to prepare the data for suitable array structures. The framework of such template could be in a single page with following structure of 8 steps:
+<xmp>
+// input: $input array
+// create suitable $untrusted and $data arrays from $input
+// preprocessing
+ob_start();
+// template code here
+$template = ob_get_clean();
+// postprocessing
+echo $template;
+</xmp>
+
+<h1>XSL based TS</h1>
+<p>XSL is not well designed language for HTML TS: the output can be any text-based format, usually XML based. HTML TS does not need that complexity: XSL generally suffers too many levels of tag nesting. Lets design the best interface for the desired tasks above:
+
+<h3>1. Autoremove empty elements</h3>
+<p>The autoremoving would be default behavior and <tt>ts-keep-empty</tt> boolean atribute would revert it.
+<xmp class="ts">
+<ul ts-keep-empty>
+  ...some autogenerated contents...
+</ul>
+</xmp>
+
+<h3>2. Add/Autoremove attributes</h3>
+<p>The autoremoving would be also the default behavior and <tt>ts-attr-if</tt> would conditionally add a boolean attribute. The value is colon separated data <i>attr:cond</i> where <i>attr</i> is the attribute name and <i>cond</i> is a boolean variable which places <i>attr</i> iff true.
+<xmp class="ts">
+<input placeholder="$placeholder"> <- is removed if $placeholder is empty
+<input type="text" ts-attrif="required:$form->name->required">
+</xmp>
+
+<h3>3. Autoescape output</h3>
+<p>The dollar sign should be replaced with corresponding escaped PHP variable and left as is or silently removed if no such variable is defined. (Syntax highlighting can be adjusted for that.) To guarantee inserting dollar sign, HTML entity needs to be used. To access object properties, <tt>-></tt> operator is unfortunate for the <tt>></tt> sign which is oftentimes escaped. There needs to be a comfortable way to produce unescaped output.
+<p>To solve these two issues there are many syntactical ways, like <tt>.</tt> operator for member access (text joining is not needed) and double dollar sign for unescaped output.
+
+<h3>4. Build class attribute</h3>
+<p>The same logic <i>attr:cond</i> can be used in <tt>ts-class</tt> attribute using comma as separator
+<xmp class="ts">
+<div ts-class="marked:$marked, bold:$number>1000">...</div>
+</xmp>
+
+<h3>5. Conditional output</h3>
+<p>To implement non-attributes features, <tt>&lt;ts></tt> tag is created. It disappears after parsing, but can apply arguments to its contents. In case of conditional output, it can be done with <tt>if</tt> attribute
+<xmp class="ts">
+<ts if="$cond">
+  ...conditional contents...
+</ts>
+<ul ts-if="$cond" ts-loop="$data:$i">
+  <li>$i
+</ul>
+</xmp>
+
+<h3>6. Iteration</h3>
+<p>Iterations are useful two ways: to repeat contents, and to repeat contents of some tag:
+<xmp class="ts">
+<ts loop="$data:$i">
+  <span>$i</span>
+</ts>
+
+<ul ts-loop="$data:$i">
+  <li>$data
+</ul>
+</xmp>
+
+<h3>7. Reusable parametrized blocks</h3>
+<p>The <tt>apply</tt> attribute is borrowed from XSL. It has <i>name:data</i> signature: the <i>name</i> uses the contents from element tagged with <tt>ts-block</tt>, the <i>data</i> defines local variables for the block. In case of <tt>apply</tt> attribute, <tt>&lt;ts></tt> element is not pair.
+<xmp class="ts">
+<span ts-block="myBlock">...</span>
+<ts block="myBlock">...</ts>
+<ts apply="myBlock:$data">Default value if myBlock is not set</ts>
+</xmp>
+
+<h3>Table example</h3>
+<p>This should serve as quick test of TS features. It should handle nested loop, produce no error if $data are not provided and place the $cell contents in table cells.
+<xmp class="ts">
+<table ts-if="$data->type=table" ts-loop="$data->items:$row">
+  <tr ts-loop="$row:$cell">
+    <td>$cell
+  </tr>
+</table>
+</xmp>
+
+<h1>Curly braces based TS</h1>
+<p>This type of TS uses mapping of its curly braces contents to PHP code, thus parsing of the template contents. Such approach should be easier to parse and custom syntax highlighted at a cost of slightly more code.
+
+<h3>1. Autoremove empty elements</h3>
+<xmp class="ts">
+<ul>{keepempty}
+  ...some autogenerated contents...
+</ul>
+</xmp>
+
+<h3>2. Add/Autoremove attributes</h3>
+<xmp class="ts">
+<input placeholder="{=$placeholder}"> <- is removed if $placeholder is empty
+<input type="text" {=if:$form->name->required,"required"}"> <- filter output
+</xmp>
+
+<h3>4. Build class attribute</h3>
+<xmp class="ts">
+<div class="{=implode(" ",$classData}">...</div>
+</xmp>
+
+<h1>Implementation</h1>
+<p>PWF should be compatible with any template system. Most of them are designed in and for specific ecosystems as original ideas from scratch: good practice from other TS are less common to mention or admit.
+<p>To design a good TS, some popular TS are examined below. As a result, a pure XSL based Ins TS and pure Curly braces based Zen TS are produced with an effort to put together pros and eliminate cons from other TS emphasizing the desired features mentioned above and eliminating features that are not essential to TS to make it as lean and extensible as possible.
+
+<h3>Latte</h3>
+<b>Cons:</b>
+<ul>
+	<li>hardcoded Nette and Tracy dependence (part of Nette ecosystem), yet still can be used as standalone
+	<li>uses file cache (raises complexity, need to manually delete when i.e. new macro is created)
+	<li>uses too many string operations (lots of memory usage)
+	<li>uses Reflection to implement functionality
+	<li>global $iterator property (which is not an iterator)
+	<li>unclear and blackboxed escaping policy
+	<li>hardcoded code indentation (is not essential, should be extension)
+	<li>uses obscure internal <tt>$ʟ_</tt> prefix
+	<li>200+ kB source code
+</ul>
+
+<b>Pros:</b>
+<ul>
+	<li><tt>n:inner-foreach</tt> attribute
+	<li>extensible filters
+</ul>
+
+<h3>Twig</h3>
+<b>Pros:</b>
+<ul>
+	<li>configurable escaping
+</ul>

@@ -1,0 +1,24 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF: Form controller</h1>
+<p>When the web interact with users on one or just a few places (like <i>contact us</i>) it doesn't need any abstraction for that: the quickest and cleanest way is to have own-brewed ad-hoc form control. No task for framework, end of story.
+<p>Form controller is useful when the users feedback is frequent on multiple places (like <i>rate this product</i>). The needs for such communication are:
+<ul>
+  <li>to have it in one place to perform form hijacking test in one place
+  <li>to identify which form was sent
+  <li>to prevent unwanted data resend (like pressing F5 after the form was sent)
+  <li>to validate the data and signal the client if something is wrong
+</ul>
+
+<h2>Verbal interface description</h2>
+<p>One of the ways to implement these features is:
+<ul>
+  <li>To create a dedicated POST endpoint which handles the requests (<i>form.php</i>, <i>controller.php</i> or similar name), every form is targeted there (like <tt>&lt;form method="post" target="api.php"></tt>).
+  <li>To name the sending button <i>form</i> and attach it a unique value (like <tt>&lt;button name="form" value="login">Sign in&lt;/button></tt>)
+  <li>To add GET or POST data named <i>target</i> where to redirect the form, if it is not the same page from which it was sent (like <tt>&lt;form method="post" target="api.php?target=step2"></tt> or <tt>&lt;input type="hidden" name="target" value="step2"></tt>)
+  <li>Some forms can be handled on background (via XMLHttpRequest). They can have the same structure (using FormData) as ordinary forms, but the end-point acts differently: it doesn't have to redirect, it is usually expected to produce a response (plain text, json, xml). Therefore it is appropriate to have a dedicated form BG endpoint (<i>ajax.php</i>, <i>api.php</i> or similar name). The request identifier may be also <i>form</i> (to comfortably "ajaxize" forms), albeit <i>request</i> or <i>action</i> is more apt here if every form has a single endpoint.
+  <li>To set SESSION flash in form endpoint to string or array to display server response to form request. (Flash module unsets it after display)
+</ul>
+
+<p>Possible implementation of <a href="src/controller.php">controller.php</a>

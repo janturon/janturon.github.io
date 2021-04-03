@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Dihellog examples</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/dihellog.js">dihellog.js</a> (666 bytes)
+<p>Download <a href="src/dihellog.css">dihellog.css</a> (666 bytes)
+
+<ul>
+	<li><a href="dihellog1.html">Dialog window</a> (dihellog.js is not needed)</a></li>
+	<li><a href="dihellog2.html">Window can be dragged and closed</a> (easily separable functionality)</a></li>
+</ul>
+
+<p>This was made as a proof of concept how jQuery-UI sucks. See my biased comparison below:
+<table>
+<tr>
+	<td>
+	<th>jQuery dialog
+	<th>dihellog
+<tr>
+	<th>Code size
+	<td>824.100 B
+	<td>666 B
+<tr>
+	<th>Memory usage
+	<td>6.000 kB
+	<td>100 kB
+<tr>
+	<th>Separable
+	<td>No
+	<td>Yes
+</table>
+
+<p>By <i>Separable</i> I mean the option to separate the functionality you need from the rest of the code features you don't intend to use. In case of jQuery you need to use the all 824 kB code bundle with 90%+ effects you will never use. Of course they brag it is 10% of the size gzipped, but this is just a cheat: the browser needs to unpack the code to run it (see the <i>Memory usage</i> difference).
+<p>jQuery was almost essential at the beginning of the 21st century when Explorer was major non-standard browser with no autoupgrade feature. In the present when browsers implement new standards almost instantly, jQuery is nothing but a dead dog.
+<p>It would be quite easy to add new modules to dihellog (like modality or resize option) in separate 666 bytes chunks of code, but there is no motivation (if you want to, just contact me): modal dialogs themselves are obsolete, today we use flash messages and background actions to interact with users.

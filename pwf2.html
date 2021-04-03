@@ -1,0 +1,36 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>PWF Endpoints</h1>
+<p>Besides of untrusted data from client's HTTP requests, endpoints should have access to trusted server's data, which can come from following resources:
+<ul>
+  <li><b>Hardcoded in file</b> which should be in a form of external data file (php, json, neon, csv, xml and others). These data should be clearly separated from the rest of the code (otherwise they would represent <i>Magic strings/numbers</i> antipattern) and constant (otherwise it is <i>Big ball of mud</i> antipattern). Possible solution for php format is to have <tt>CONFIG</tt> constant array (which conveniently acts like superglobal read-only array).
+  <li><b>Provided by service</b> (like DBMS). These data are dynamically created (may change in time) in various formats.
+  <li><b>Session (request persistent)</b> data are accumulated within the user's interaction with the web.
+</ul>
+<p>Let's define three classes of endpoints:
+<ul>
+  <li><b>statefull endpoint</b> with all three types of trusted input.
+  <li><b>stateless endpoint</b>: the input is fully defined by HTTP request. This happens if session data are not used.
+  <li><b>idempotent endpoint</b>: the output is fully defined by HTTP request. This happens if session and service-based data are not used.
+</ul>
+<p>In these trusted resources there should be <b>Client metadata</b>: the format in which the client's data are validated. This is not enough for secure requests, the data also needs to be <i>consistent</i>. The <b>Consistency metadata</b> are usually a set of rules/tests. Consistency metadata may be dynamic (i.e. user gaining priviledges in time). If responsibility is involved in data handling, valid and consistent data are not automatically <b>Trusted data</b>. In that case we need to check them outside of scope of consistency rules by using TLS (certificate check), dual security logging or by filtering network attacks on lower layer protocol. Communication security is usually not dependent on the web workflow and can be delegated to proxies which mark data as trusted.
+<ul>
+  <li><b>example of invalid data</b> (meta) <tt>{deposit: int}</tt>, (data) <tt>{deposit: 'a lot'}</tt>
+  <li><b>example of valid inconsistent data</b> (meta) <tt>{deposit: int, maxDeposit: int}</tt> (data) <tt>{deposit: 30, maxDeposit: 20}</tt> (consistency rule) <tt>assert(deposit&lt;=maxDeposit)</tt>
+</ul>
+<p>If client's data are in valid format and consistent with data rules, the endpoints may optionally do some <b>postprocessing</b> to transform them to fit into small set of data models input (which will be discussed later).
+<p>This is expressed in the following diagram:<br><br>
+<img src="assets/pwf-data.png"><br>
+<p>If the valid consistent request can not be obtained, it usually leads to one or a few error workflows. Therefore the endpoint should not defensively test the input in every function, but rather raise <b>Exception</b> which will auto-redirect it to error handling unit. The suggested exceptions are:
+<ul>
+  <li><b>PWF_UNSUPPORTED_HTTP_METHOD</b> if the HTTP Request method is unexpected.
+  <li><b>PWF_MISSING_TRUSTED_DATASOURCE</b> if some trusted datasource is unavailable.
+  <li><b>PWF_INVALID_SERVICE_DATA</b> if some service doesn't return expected data (hardcoded data are trusted to avoid overzealous checking).
+  <li><b>PWF_INVALID_REQUEST</b> if the client's request contains invalid data.
+  <li><b>PWF_INCONSISTENT_REQUEST</b> if the combination of trusted and client's data is inconsistent with input rules.
+  <li><b>PWF_UNTRUSTED_REQUEST</b> if security proxies are involved.
+</ul>
+<p>Only endpoints should handle client's requests. Only error handlers should handle errors. Other framework units should trust the valid consistent trusted request, they should not test it again, they should focus on the workflow. In procedural paradigm the program has <i>phases</i> and testing outside of testing phase is an antipattern resembling God object in OOP.
+<br><br>
+<p>In the <a href="pwf3.html">next step</a> we will discuss the structure of the endpoints.

@@ -1,0 +1,404 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  h2 { margin: 1em 0 .2em; }
+  p { margin: 0; padding: .2em .5em; box-sizing: border-box; }
+  xmp { font-size: 0.9em; background: white; }
+	article { display: flex; flex-flow: row wrap; }
+	article > * { padding: 0 .5em; flex-basis: 50%; box-sizing: border-box; }
+  article.col3 > * { flex-basis: 33%; }
+  article.col3 :before { content: ' '; }
+	article > *:before { display: block; font-weight: bold; width: 50%; border-bottom: 1px solid black; margin: 0; height: auto; position: static; }
+	article .zen:before { content: 'zen'; }
+	article .latte:before { content: 'latte'; }
+</style>
+
+<h1>Zen vs. Latte</h1>
+
+<h2>Overall stats</h2>
+<p>Zen is almost 100 times smaller and 3 times faster than Latte. Latte relies on objects and namespaces, zen uses global prefix. Latte needs composer to install. Some of its functionality (forms, cache, control) can be used only in Nette framework and dump requires Tracy. These are not provided as Latte extension, but is inseparably hardcoded into Latte.
+<article>
+<div class="zen">
+	size: 666 bytes (+2.3 kB extensions)<br>
+	PHP version: 7.4+<br>
+	dependencies: none<br>
+	conventions: <tt>zen_</tt> prefix reserved<br>
+    new syntax: 10 keywords<br>
+    needs disk cache: no<br>
+	relative performance: 0.005ms<br>
+    default escaping: htmlspecialchars
+</div>
+<div class="latte">
+	size: 208.4 kilobytes<br>
+	PHP version: 7.1+ (Latte 2.9)<br>
+	dependencies: Nette and Tracy (not necessary), composer<br>
+	conventions: <tt>Latte</tt> namespace<br>
+    new syntax: 50 keywords<br>
+    needs disk cache: yes<br>
+	relative performance: 0.01-0.02ms; 0.05ms non-cached<br>
+    default escaping: context dependent
+</div>
+</article>
+
+<h2>Installing</h2>
+<article>
+<xmp class="zen">
+require "zen.php";
+require "zen_ext.php";
+</xmp>
+<xmp class="latte">
+composer require latte/latte
+require "vendor/autoload.php";
+</xmp>
+</article>
+
+<h2>Loading</h2>
+<article>
+<xmp class="zen">
+echo zen("mytemplate.zen", $items);
+</xmp>
+<xmp class="latte">
+$latte = new Latte\Engine;
+$latte->setTempDirectory("./tmp");
+$latte->render("mytemplate.latte", $items);
+</xmp>
+</article>
+
+<h2>Error handling</h2>
+<p>Latte supports standard Exceptions with customized error messages. Zen provides customizable error handler with parametrized data, but lacks support of error line due to php eval limitations. That could be overcomed by parsing into file instead of memory like Latte does, but the drawback would be cutting off SSD lifespan.
+<article>
+<div class="zen">
+Register <tt>$zen_errparse</tt> function which gets array parameter with following keys:
+<ul>
+  <li><tt>file</tt>: the template file where the error occured
+  <li><tt>line</tt>: the line where the error occured
+  <li><tt>message</tt>: the error message
+  <li><tt>parsed</tt>: the parsed template (as string)
+  <li><tt>data</tt>: the data provided for the parsing
+</ul>
+Also register <tt>$zen_errext</tt> function to detect error in extension function. It has the same keys as the function above plus
+<ul>
+	<li><tt>fn</tt>: function name that caused the error (if not anonymous)
+</ul>
+</div>
+<div class="latte">
+Throws <tt>Latte\CompileException</tt> exception. Provides also template exceptions (albeit this should be in the data model realm, not in templates):
+<xmp>
+{try}
+  <ul>
+  {foreach $twitter->loadTweets() as $tweet}
+    <li>{$tweet->text}</li>
+  {/foreach}
+  </ul>
+{else}
+  <p>No tweets loaded.</p>
+{/try}
+</xmp>
+</div>
+</article>
+
+<h2>Printing</h2>
+<p>Both templates uses similar syntax. Latte omits `=` as printing sign sometimes shortening syntax by 1 character, but making it non-intuitive if output is produced or not.
+<article class="col3">
+<xmp class="zen">
+{=$var}, {=expr}
+{=html:$data}
+§[, ]§
+</xmp>
+<xmp>
+escaped output
+non-escaped output
+curly braces
+</xmp>
+<xmp class="latte">
+{$var}, {expr}, {=expr}
+{$data|noescape}
+{l}, {r}
+</xmp>
+</article>
+
+<h2>Skip empty</h2>
+<p>Latte relies on <tt>n:</tt> attributes which are control structures removed/replaced from the output. This is very confusing as such syntax is reserved for namespaced attributes (like in <tt>svg</tt> elements). There are also no curly braces inside <tt>n:</tt> attributes which is a bit inconsistent with normal attributes. <tt>n:if</tt> removes the tag from the output if the expression in the attribute evaluates empty, but still produces warning if the variable doesn't exist and still evaluates the contents of the tag.
+<p>Zen autoremoves empty tags if they don't contain <tt>{keepempty}</tt>. It also autoremoves attributes  containing empty strings (boolean attributes should be encoded without value in HTML5 and with non-empty value in XML and XHTML).
+<article class="col3">
+<xmp class="zen">
+<ul>{keepempty}...</ul>
+<ul class="{=$empty}">
+</xmp>
+<xmp>
+skip empty tags
+skip empty attributes
+</xmp>
+<xmp class="latte">
+<ul n:if="$items">...</ul>
+<ul n:class="$empty">
+</xmp>
+</article>
+
+<h2>Optional tag wrapping</h2>
+<p>The use case for this is producing text output from data <tt>[text: "...", link: "..."]</tt> where the <tt>link</tt> is optional. From the HTML DOM perspective, it is something like autogenerated wrapping elements like <tt>tbody</tt> or virtual elements like in flexbox model, but there is no such thing in the specs for links, so it can not be done on HTML level.
+<p>Latte introduces <tt>n:tag-if</tt> to facilitate this, but it is not consistent with the HTML autoelements: it should be applied to a span tag which would be optionally wrapped by link tag. Zen can provide the functionality by custom function. Fortunately, you can use the same syntax in Latte
+<article>
+<xmp class="zen">
+function linkable($text, $href=null) {
+  $text = htmlspecialchars($text);
+  $out = "<span>$text</span>";
+  // add href control to mitigate XSS
+  if($href) $out="<a href=\"$href\">$out</a>";
+  return $out;
+}
+---
+{=html:linkable($text,$href)}
+</xmp>
+<xmp class="latte">
+<p>
+  <a href="{$href}" n:tag-if="{$href}">
+    {$text}
+  </a>
+</p>
+
+--or--
+
+{linkable($text,$href)|noescape}
+</xmp>
+</article>
+
+<h2>Custom filters</h2>
+<p>In Latte the filter function is registered by <tt>$latte->addFilter($name, $fn)</tt> method. In zen, the function is defined with <tt>zen_</tt> prefix.
+<article>
+<xmp class="zen">
+function zen_shortify($s, $len) {
+  return mb_substr($s, 0, $len);
+}
+---
+{=shortify: $data, 100}
+</xmp>
+<xmp class="latte">
+$latte->addFilter('shortify',
+  function($s, $len = 10) {
+    return mb_substr($s, 0, $len);
+  }
+);
+---
+{$data|shortify:100}
+</xmp>
+</article>
+
+<h2>Control structures</h2>
+<p>Both templates provide the same functionality as PHP. Latte skips parentheses and colon in its dialect. Zen allows both <tt>{end-}</tt> and <tt>{/-}</tt> closing tags. Control structures available:
+<article>
+<xmp class="zen">
+{if($cond):}
+{elseif($cond):}
+{else:}
+{switch($cond):}
+{for($init;$test;$done):}
+{foreach($data as $key=>$val):}
+{while($cond):}
+</xmp>
+<xmp class="latte">
+{if $cond}
+{elseif $cond}
+{else}
+{switch $cond}
+{for $init;$test;$done}
+{foreach $data as $key=>$val}
+{while $cond}
+</xmp>
+</article>
+
+<h2>Syntactic sugar</h2>
+<h3>Inner foreach</h3>
+<p>Latte provides an elegant way to produce child nodes without extra lines in template syntax. It also handles nested inner foreaches well. Zen must rely on less elegant outer foreach.
+<article>
+<xmp class="zen">
+not supported
+</xmp>
+<xmp class="latte">
+<ul n:inner-foreach="$items as $item">
+  <li>{$sub}</li>
+</ul>
+</xmp>
+</article>
+
+<h3>Iteration</h3>
+<p>Latte auto creates <tt>$iterator</tt> object inside foreach loops. It is rather sloppy in nested loops and it is not iterator at all (having no <tt>next()</tt> method). Zen provides <tt>loop</tt> iteration, where the identifier of iteration object can be specified:
+<article class="col3">
+<xmp class="zen">
+{loop($data as $i):}
+  {=$i->index}
+  {=$i->order}
+  {=$i->length}
+  {=$i->key}
+  {=$i->value} or just {=$i}
+  {=$i->isFirst}
+  {=$i->isLast}
+  {=$i->order%2}
+  {=$i->index%2}
+  referenced by variable
+{/loop}
+</xmp>
+<xmp>
+
+zero-based counter
+order in array
+length of array
+key of n-th item
+value of n-th item
+test for first item
+test for last item
+test for odd item
+test for even item
+get parent loop object
+</xmp>
+<xmp class="latte">
+{foreach $data as $key=>$item}
+  {$iterator->counter0}
+  {$iterator->counter}
+  not implemented
+  {$key}
+  {$item}
+  {$iterator->first}
+  {$iterator->last}
+  {$iterator->odd}
+  {$iterator->even}
+  {$iterator->parent}
+{/foreach}
+</xmp>
+</article>
+<p>Zen syntax allows readable <tt>Item {=$i->order} of {=$i->length}: {=$i}</tt> syntax.
+
+<h3>First and last snippet</h3>
+<p>Latte provides <tt>{first}</tt> and <tt>{last}</tt> syntactic sugar to loop controls to provide header/footer additions in the output. This syntax is unclear in nested loops and introduces unnecessary syntax. Zen utilizes loop's iteration object, allowing both inline and enclosed syntax.
+<article>
+<xmp class="zen">
+<ul>
+{loop($items in $i):}
+  <li>
+    {=if:$i->isFirst,"first"}
+    {=if:$i->isLast,"last"}
+    --or--
+    {if($i->isFirst} first {/if}
+    {if($i->isLast} last {/if}
+  </li>
+{/loop}
+</ul>
+</xmp>
+<xmp class="latte">
+<ul n:inner-foreach="$items as $item">
+  <li>
+    {first} first {/first}
+    {last} last {/last}
+  </li>
+</ul>
+</xmp>
+</article>
+
+<h3>Items separator</h3>
+<p>Latte provides <tt>{sep}</tt> tag, which has it's longer equivalent in zen:
+<article>
+<xmp class="zen">
+{loop($items in $i):}
+  {=$i->value} {=if:!$i->isLast,","}
+{endloop}
+</xmp>
+<xmp class="latte">
+{foreach $items as $i}
+  {$i} {sep},{/sep}
+{/foreach}
+</xmp>
+</article>
+
+<h2>Translations</h2>
+<p>Translations are very common and needs shorthand syntax.
+<article>
+<p>Zen utilizes PHP gettext.
+<p>Latte registers <tt>|translation</tt> filter
+<xmp class="zen">
+{==$text} or {=_($text)}
+</xmp>
+<xmp class="latte">
+{_$text}
+</xmp>
+</article>
+
+<h2>Includes</h2>
+<p>Both template systems support templates in template:
+<article>
+<xmp class="zen">
+{=$user->name}
+{=html:zen("table.zen", $user->data)}
+</xmp>
+<xmp class="latte">
+{$user->name}
+{include "table.latte", data: $user->data}
+</xmp>
+</article>
+
+<h2>Building blocks</h2>
+<p>In the following comparison, we create <i>My default contents</i> in the template which can be ovewritten by another template (placing <i>My new contents</i> there)
+<h3>Preload contents</h3>
+<article>
+<p>Zen uses <tt>save - into</tt> syntax, which stores part of the template into variable to be reused later. Zen doesn't make a difference between variable data and block data.
+<p>Latte uses <tt>block</tt> command, which prints the contents, but gives an option to redefine it later.
+<xmp class="zen">
+{save}
+  My new contents
+{into $header}
+</xmp>
+<xmp class="latte">
+{block header}
+  My default contents
+{/block}
+
+--or--
+
+{capture $header}
+  My default contents
+{/capture}
+</xmp>
+</article>
+
+<h3>Load another file</h3>
+<article>
+<p>Zen uses <tt>include</tt> or <tt>require</tt> command that loads the target file into the contents to parse, just like PHP.
+<p>Latte uses <tt>layout</tt> command, which loads the template with default blocks which can be redefined later. To print the block elsewhere, it also has <tt>include</tt> keyword (unlike PHP meaning applicable only on blocks):
+<xmp class="zen">
+{save}
+  My default contents
+{into $header}
+
+{include "header.zen"}
+
+<header>
+  {=html:$header}
+</header>
+</xmp>
+<xmp class="latte">
+{layout $sourceFile}
+
+<header>
+  {block header}
+    My new contents
+  {/block}
+</header>
+</xmp>
+</article>
+
+<h3>Apply filter to block contents</h3>
+<article>
+<p>Zen applies the filter on the saved contents.
+<p>Latte uses filter in block syntax.
+<xmp class="zen">
+{save}
+  My header
+{into $header}
+
+{=myFilter:$header}
+</xmp>
+<xmp class="latte">
+{block|myFilter}
+  My header
+{/block}
+</xmp>
+</article>

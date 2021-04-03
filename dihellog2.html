@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>Dihellog - Dialog window</h1>
+<p><a href="dihellog.html">Back to Dihellog</a></p>
+
+<p>You can see an ordinary list. Click on the image to turn it into carousel. See the <tt>onclick</tt> in code below.</p>
+
+<xmp id="xmp">
+<link rel="stylesheet" href="src/dihellog.css">
+<script src="src/dihellog.js"></script>
+
+<div class="dialog" style="width: 300px">
+	<div class="title">Basic dialog</div>
+	<div class="close"></div>
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the &apos;x&apos; icon.</p>
+</div>
+
+<script>
+addEventListener("load", function() {
+	var elems = document.querySelectorAll(".dialog");
+	elems.forEach(draggable);
+	elems.forEach(closeable);
+});
+</script>
+</xmp>
+
+<main id="main">
+</main>
+
+
+<script>
+	xmp2code(xmp, main);
+</script>

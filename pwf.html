@@ -1,0 +1,16 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Passive Web Framework</h1>
+<h2>Web tools</h2>
+<p>Well designed general purpose tools transform themselves in time as language features encoded in more effective lower-level language. There are useful tools written for the same language, like PHP library written in PHP. Such tools are still in development process: if they are proven good, they are rewritten into C++ and compiled as PECL extension for PHP. It requires more experience and it is usually not available on PHP hosting services, so many backend developers may opt for the PHP way.
+<p>On each level of language we solve different problems: for instance, on C++ level we solve HTTP parsing, on PHP level form validation, on e-shop framework level Cart handling. When one codes e-shop, he should not write code like <tt>if(isset($_POST["order"]))...</tt>, this is lower level than he needs. He should write code like <tt>$cart->onItemAdded($stock->checkAvailability)</tt>. The objects <tt>$cart</tt> and <tt>$stock</tt> were encoded similarly on many e-shops. <b>E-shop framework</b> should provide a way to adapt them in very short code, so the coder can focus on e-shop workflow implementation.
+<h2>Framework and workflow</h2>
+<p>Framework outsources the workflow from applications and provides extension interfaces to tweak it a bit. It saves lots of effort when the workflow of the application is in line with the workflow the framework assumes. It costs lots of extra effort when appropriate extension is missing. Therefore the more general the framework is, the less grip on the workflow it should have.
+<h2>Boilerplate framework</h2>
+<p>There is a widespread antipattern among framework coders: to start a new module by copying existing one as a "template" and modifying it. Framework should remove the repeating parts, not add them. In a good framework, one should be able to code the desired workflow from scratch, fast and intuitively.
+<h2>General purpose framework</h2>
+<p>General purpose framework should not enforce any workflow. To achieve this, only web tools are provided. Every tool expects input in some form and transforms it into output of another form. These tools are passive (one doesn't enforce use of other) and independent (one can replace any tool without affecting others).
+<p>Framework emerges when you chain these tools in workflow diagrams. Once you assemble the Passive Web Tools (PWT) into complete web workflow, you get Passive Web Framework (PWF).
+<br><br>
+<p>In the <a href="pwf1.html">next step</a> we will discuss PWT architecture.

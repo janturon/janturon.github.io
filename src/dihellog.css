@@ -1,0 +1,7 @@
+/* Made under HELL LICENSE as a proof of concept that 666 B is enough to express thought */
+.dialog { position: absolute; display: flex; flex-flow: column; padding: 3px; }
+.dialog>.title { padding: .4em 1em; cursor: move; font-weight: bold; background: #E9E9E9; }
+.dialog>.close::before { content: 'x'; position: absolute; right: calc(4px + .4em); top: calc(2px + .4em); padding: 0 0.2em; cursor: pointer; background: #F6F6F6; color: #444; }
+.dialog>.close:hover::before { background: #E9E9E9; }
+.dialog, .dialog>.title, .dialog>.close::before { border-radius: 3px; border: 1px solid #DDD; box-sizing: border-box; }
+.dialog>:not(.title) { margin: .5em 1em; }

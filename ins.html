@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Ins</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Ins is yet another PHP template system (TS) with its templates beeing HTML5 valid code. The functionality is inspired by XSL and Latte, implementing the template tasks with custom elements and attributes. HTML5 doesn't allow to add new elements, namespaced or not. Because of this greediness, Ins stole the element <tt>&lt;ins></tt>, which was almost never used anyway and is semantically appropriate to insert contents into the template, hence the name "Ins". The ins tag has similar meaning to <tt>xsl:</tt> tags, and <tt>ins-</tt> attributes can be placed into any tag, similarly to Latte approach. All ins syntax is removed after the transpilling process and the HTML with contents is the output.
+
+<h2>Installation</h2>
+<xmp>
+include "ins.php";
+$code = file_get_contents("yourTemplate.html");
+echo ins($code);
+</xmp>
+
+<h2>Ins Tutorial</h2>
+<ul>
+	<li><a href="http://janturon.cz/ins/test.php?file=01-output">01: Basic output</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=02-skip-empty">02: Skip empty</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=03-if">03: If</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=04-loop">04: Loop</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=05-functions">05: Functions</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=06-blocks">06: Blocks</a>
+	<li><a href="http://janturon.cz/ins/test.php?file=07-utilities">07: Utilities</a>
+</ul>

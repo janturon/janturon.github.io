@@ -29,6 +29,10 @@
 </main>
 
 <script>
+  let Matrix = (M, fromSelf) => M.innerHTML =
+    (fromSelf ? (M.value=eval(M.innerHTML)) : M.value).map(r =>
+      r.map(c => `<b>${c}</b>`).join('')).join('<br>')
+
   let MatrixProd = (A, B) =>
     A.map((row, i) =>
       B[0].map((_, j) =>
@@ -37,13 +41,6 @@
         )
       )
     )
-
-  let Matrix = (M, fromSelf) => (
-    fromSelf && (M.value = eval(M.innerHTML)),
-    (M.innerHTML = M.value.map(r =>
-      r.map(c => `<b>${c}</b>`).join('')
-    ).join('<br>'))
-  )
 
   Matrix(A, true)
   Matrix(B, true)

@@ -38,20 +38,18 @@
       )
     )
 
-  let Matrixize = (M, fromSelf) => (
+  let Matrix = (M, fromSelf) => (
     fromSelf && (M.value = eval(M.innerHTML)),
-    M.innerHTML = "",
-    M.value.forEach(r => (
-      r.forEach(c => M.innerHTML+= `<b>${c}</b>`),
-      M.innerHTML+= '<br>'
-    ))
+    (M.innerHTML = M.value.map(r =>
+      r.map(c => `<b>${c}</b>`).join('')
+    ).join('<br>'))
   )
 
-  Matrixize(A, true)
-  Matrixize(B, true)
+  Matrix(A, true)
+  Matrix(B, true)
 
   C.value = MatrixProd(A.value, B.value)
-  Matrixize(C)
+  Matrix(C)
 </script>
 </xmp>
 

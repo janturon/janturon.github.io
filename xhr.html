@@ -1,0 +1,75 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>XHR</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/xhr.js">xhr.js</a> (666 bytes)
+
+<p>It is a little to add in XMLHttpRequest "library". Native XMLHttpRequest is as simple as can be, most "enhancement" is just blackboxing the obvious.
+<p>What XHR does:
+<ul>
+  <li>it shortens XMLHttpRequest to XHR :-)
+  <li>it wraps XMLHttpRequest into Promise
+  <li>it can build encoded request string from JSON
+</ul>
+
+<h3>Syntax</h3>
+<xmp>
+Promise XHR(string server[, object|string? get[, object|string? post[, fn? Pfn[, fn? Efn]]]])
+</xmp>
+<ul>
+  <li><b>server</b> URL of the server requested by HTTP(S)
+  <li><b>get</b> data sent in URL
+  <li><b>post</b> data sent in HTTP body
+  <li><b>Pfn(int loaded, int total, bool upload)</b> if provided, it is called during the data transfer
+  <ul>
+    <li><i>loaded</i> number of bytes sent so far
+    <li><i>total</i> total number of bytes to send
+    <li><i>upload</i> true for upload phase (the request), false for download (the response)
+  </ul>
+  <li><b>XMLHttpRequest Efn(XMLHttpRequest X)</b> if provided, can enhance the XMLHttpRequest object before send
+  <li><b>object return</b> the returned object in <tt>.then</tt> method receives an object with attributes
+  <ul>
+    <li><i>string response</i> the HTTP body of the response
+    <li><i>array headers</i> the HTTP headers of the response
+  </ul>
+</ul>
+
+<main id="main1"></main>
+
+<xmp id="xmp1">
+<input type="number" id="number1" value="1" autocomplete="off">
+<button id="btn1">Get number in English</button>
+<output id="out1">using GET method</output>
+
+<script src="src/xhr.js"></script>
+<script>
+btn1.onclick = _=>
+  XHR('https://janturon.cz/number.php', {value: number1.value})
+    .then(data => out1.innerHTML = data.response);
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp1, main1);
+</script>
+
+<main id="main2"></main>
+
+<xmp id="xmp2">
+<input type="number" id="number2" value="1" autocomplete="off">
+<button id="btn2">Get number in English</button>
+<output id="out2">using POST method</output>
+
+<script>
+btn2.onclick = _=>
+  XHR('https://janturon.cz/number.php', null, {value: number2.value})
+    .then(data => out2.innerHTML = data.response);
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp2, main2);
+</script>

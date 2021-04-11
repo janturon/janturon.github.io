@@ -1,0 +1,22 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Carouhell examples</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/db.js">db.js</a> (666 bytes)
+
+<h2>The history and current state of WebSQL</h2>
+<p>Mozzila convinced in 2010 the W3C not to develop the standard as the only implementation was SQLite. As a consequence, Firefox intentionally didn't include the support and later Safari <a href="https://caniuse.com/sql-storage">abandoned</a> theirs. Luckily, WebKit maintains it for more than a decade since then, and other vendors seem to follow them as implementing SQLite is relatively easy and very useful. Let's hope the public pressure will revive the W3C standard.
+
+<h2>About this project</h2>
+<p>WebSQL is implemented with asynchronous interface, which DB simplifies by utilizing Promises: modern approach to parallel programming in Javascript. The simplicity comes at cost of transactions, which can be easily understood from the source code.
+<p>
+
+<ul>
+  <li><a href="db1.html">Create tables</a> Here we create two tables, briefly explain the async/await patter in work with concurrent threads and discuss the SQLite types in Javascript.
+  <li><a href="db2.html">Insert data</a> with emphasis on more features of Promises.
+  <li><a href="db3.html">Retrieve data</a>
+  <li><a href="db4.html">Update data</a>
+  <li><a href="db5.html">Debug SQL errors</a>
+</ul>

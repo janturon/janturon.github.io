@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>DB - Parallel threads with serial tasks</h1>
+
+<p>Task is a thread abstraction. On lower level, new thread is created when needed, resources from thread pool can be reused. Creating threads to work one after another often times leads to this reusing.
+<p>Here we fill two tables, where we assign two accounts to John and one account to Joe. If we can ensure that John gets id=1 and Joe id=2, we can use parallelism and run these tasks as two independent threads (they don't race for resources).
+<p>In both threads we need to FIRST delete all the data from the table and THEN add our data. Instead of async/await pattern we used <tt>.then</tt> Promise chaining. This method returns calls its argument after the Promise on which it was called is fulfilled and returns another Promise which replaces the original one. In the syntax below we are guaranteed that John is inserted first and Joe second. Every SQLite table has default implicit <tt>rowid</tt> attribute, that works as integer autoincrement primary key.
+<p>In case of accounts table, we don't care in which order they run, so we can use a single <tt>.then</tt>. The <tt>fillDB</tt> function is not async and returns another promise that is fulfilled when both tables are filled. Then we use <tt>.then</tt> on its call in the onclick event, where we can also <tt>.catch</tt> rejected Promise (instead of try/catch syntax used in async/await pattern). The <tt>.catch</tt> bubbles up just like in Exception handling, so we can call it only on the topmost Promise if the error handling is the same.
+
+<main id="main"></main>
+
+<xmp id="xmp">
+<button id="btn">Fill tables</button>
+<output id="out"></output>
+
+<script src="src/db.js"></script>
+<script>
+function fillDB() {
+  var stack = [];
+  stack.push(
+    DB.query("DELETE FROM users")
+      .then(_=>DB.insert("users",{name:"John",age:27}))
+      .then(_=>DB.insert("users",{name:"Joe",age:42}))
+  );
+  stack.push(
+    DB.query("DELETE FROM accounts")
+      .then(_=> {
+        DB.insert("accounts", ["user","credit"], [[1,100], [1,50]])
+        DB.insert("accounts", ["user","credit"], [2,200])
+      })
+  );
+  return Promise.all(stack);
+}
+
+btn.onclick = _ =>
+  fillDB()
+    .then(_ => out.innerHTML = 'Data written')
+    .catch(e => console.error(e))
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>
+
+<h3>DB.insert syntax</h3>
+<p>The syntax can come in one of three forms
+<xmp>
+(1) DB.insert(string table, object data);
+(2) DB.insert(string table, array keys, array values);
+(3) DB.insert(string table, array keys, array of arrays values);
+</xmp>
+<p>In all cases last inserted rowid is returned as the argument for the resolver, so we can obtain it like
+<xmp>
+DB.insert("users", {name: "John", age: 27}).then(id => console.log("John has ID="+id));
+</xmp>
+<p>Case (2) is similar to (1) except instead of object we provide two arrays. Case (3) allows to insert multiple rows.

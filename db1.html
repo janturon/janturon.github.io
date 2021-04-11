@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>DB - Wait for concurrent threads</h1>
+
+<p>DB queries may take some time to execute, thus asynchronous interface is mostly used. DB wraps them into Promises, which allows concurrent multithread execution. Here we create two parallel threads, wait for both of them to finish by <tt>Promise.all</tt> and then produce the output. To use <tt>await</tt>, the function needs to be declared <tt>async</tt>, so it is run in thread separate from the main process: <i>test</i> is written in the console first, when the tables are not created yet! Make sure all the threads are finished before the user leaves the page (i.e. by clicking a link), otherwise the DB may be left in corrupted state.</p>
+
+<main id="main"></main>
+
+<xmp id="xmp">
+<button id="btn" onclick="createDB();console.log('test')">Create tables</button>
+<output id="out"></output>
+
+<script src="src/db.js"></script>
+<script>
+async function createDB() {
+  try {
+    var stack = [];
+    stack.push(DB.query("CREATE TABLE IF NOT EXISTS users (name TEXT COLLATE NOCASE, age INT)"));
+    stack.push(DB.query("CREATE TABLE IF NOT EXISTS accounts (user INT, credit INT)"));
+    await Promise.all(stack);
+    out.innerHTML = "Tables users and accounts have been created";
+    console.log("all OK");
+  }
+  catch(e) {
+    out.innerHTML = "Tables were not created, see console for more info";
+    console.error(e);
+  }
+}
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>
+
+<p>To inspect the tables, check the Application tab in the browser.
+<p><img src="assets/websql.png">
+
+<h3>SQLite types in Javascript</h3>
+<p>Scripting languages do not enforce strict memory types and switch among them automatically, but it can not be automated allways. SQLite is written in C and the comparison is made on C level, strictly typed. When you don't declare column type (like <tt>CREATE TABLE users (name, age)</tt>, it is used as BLOB type, data are stored in binary form. So when you call i.e. <tt>INSERT INTO users (name, age) VALUES ('John', 27)</tt>, the 27 is stored as <tt>00 00 00 1B</tt> (on 32bit MSB systems) and then call <tt>SELECT * FROM users WHERE age=?</tt> and replace the token with input field value, it is a string "27" stored as <tt>20 25 00</tt>, so nothing is found on the request. But if you declared age as TEXT or INT type, you would find John.
+<p>TEXT types can use COLLATES (default is BINARY), which is a function used in comparison. On C level you can create your own, in Javascript you can use only the predefined, which is NOCASE (case insensitive comparison) and RTRIM (to strip spaces when loading various length strings from inapproprietely used CHAR type in other databases). Luckily, SQLite does not have CHAR type and the text is stored in UTF-8 (you can use CHAR, VARCHAR, MEDIUMTEXT etc. in column declaration, but it is always TEXT type in SQLite)
+<p>Similar problem exists in numeric realm: floats and integers have different representation in memory. But if you declared age as REAL and tried to select the row by using 27 integer literal, you would still find John, because the integer would be converted to REAL data type. This is called <i>type affinity</i>, no such type conversion happens in BLOB type. For compatibility reasons, you can also declare FLOAT or DOUBLE type, which is in SQLite just alias for REAL. On the other hand, you can declare NUMERIC type which prefers INT, but can store also REAL (useful when you don't use comparison on this column, just mathematical operations and you want to allow decimal numbers occasionally).
+<p>DATE type is a bit confusing, as it uses NUMERIC type, which can store INT (number of seconds since 1.1.1970) or REAL (number of days since 24.11.4714 B.C.). SQLite date and time functions can handle both and TEXT type, which stores the date in ISO8601 format. To clearly convert dates and times from other DB engines, it is less confusing to use INT for Unix timestams and TEXT for ISO8601 strings.

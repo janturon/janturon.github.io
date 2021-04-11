@@ -1,0 +1,32 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>DB - Debugging SQL errors</h1>
+
+<main id="main"></main>
+
+<xmp id="xmp">
+<button id="btn">Produce error</button>
+<output id="out"></output>
+
+<script src="src/db.js"></script>
+<script>
+btn.onclick = _=>
+  DB.query("SELECT everything FROM accounts WHERE rowid=?", [42])
+    .then(_ => out.innerHTML = "everything OK")
+    .catch(e => out.innerHTML = e.message);
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>
+
+<h3>Error object</h3>
+<p>Upon clicking the button, console error outputs enhanced SQLError object with following attributes:
+<ul>
+  <li><b>code</b> error code
+  <li><b>message</b> description of the error
+  <li><b>query</b> query which caused the error
+  <li><b>params</b> params to the buggy query
+</ul>

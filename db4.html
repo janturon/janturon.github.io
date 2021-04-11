@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>DB - Updating data</h1>
+
+<main id="main"></main>
+
+<xmp id="xmp">
+<input type="number" id="account" placeholder="account number...">
+<input type="number" id="credit" placeholder="credit value...">
+<button id="btn">Update credit</button>
+<output id="out"></output>
+
+<script src="src/db.js"></script>
+<script>
+btn.onclick = _=>
+  DB.query("UPDATE accounts SET credit=? WHERE rowid=?", [credit.value, account.value])
+    .then(n => out.innerHTML = n ? "Credit updated" : "No such account");
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>
+
+<h3>DB.query syntax</h3>
+<xmp>
+int DB.query(string query, [array params])
+</xmp>
+<p>This method can also have params, just like <tt>DB.select</tt>. The returned value is the number of affected rows (meaningful for UPDATE and DELETE).

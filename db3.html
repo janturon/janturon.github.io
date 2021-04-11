@@ -1,0 +1,43 @@
+<link rel="stylesheet" href="src/style.css">
+<script src="src/script.js"></script>
+
+<h1>DB - Retrieving data</h1>
+
+<main id="main"></main>
+
+<xmp id="xmp">
+<button id="btn">Load data</button><br>
+<output id="out"></output>
+
+<script src="src/db.js"></script>
+<script>
+async function loadData() {
+  let rows = await DB.select(`
+    SELECT U.name, SUM(A.credit) AS total, COUNT(A.credit) AS accounts
+    FROM users U left JOIN accounts A ON A.user=U.rowid
+    WHERE A.credit>?
+    GROUP BY A.user
+    ORDER BY A.credit DESC
+  `, [20]);
+  return rows.map(row =>
+    `${row.name} has total ${row.total} credits in ${row.accounts} accounts.`).join('<br>');
+}
+
+btn.onclick = async _ => out.innerHTML = await loadData();
+</script>
+</xmp>
+
+<script>
+  xmp2code(xmp, main);
+</script>
+
+<h3>DB.select syntax</h3>
+<xmp>
+(array of objects) DB.select(string query, [array params])
+</xmp>
+<p>The only mandatory argument is the SQL SELECT query, which can contain <tt>?</tt> tokens. If it does contain them, the second argument must be present in form of array with the same amount of values, which are (properly escaped) placed one by one into the query. The return value is array of objects, where its attributes correspond to the names of selected columns. If the query doesn't return any row, the return value is an empty array.
+<p>There is also similar method for retrieving a single row:
+<xmp>
+object DB.selectRow(string query, [array params])
+</xmp>
+<p>Here the first row is returned as an object. If the query doesn't return any row, undefined is returned.

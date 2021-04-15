@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>IDB</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Download <a href="src/idb.js">idb.js</a>
+
+<p>Read <a href="idbref.html">the manual</a>
+
+<h2>Before you even start</h2>
+<p>There is a bit misconception among some coders when they first meet IndexedDB. To avoid it, it is important to keep in mind that:
+<ul>
+  <li><b>IndexedDB does not use tables</b>, but object stores. The records do not have to be the same type. They do not have columns.
+  <li><b>IndexedDB works with objects</b>, each record in store can have complex structure. They are not rows.
+  <li><b>IndexedDB does not use SQL</b>, so don't think in SQL here. SQL is for tables. In stores one does not JOIN.
+  <li><b>IndexedDB has indexes</b> and they are necessary for quick basic sorting and filtering. Complex operations need to be done on JS level with help of low level traversing objects called <i>cursors</i>.
+  <li><b>IndexedDB (and thus IDB) has an upgrade phase</b> called by <tt>onupgradeneeded</tt> event at the beginning of the script, where storage manipulation operations can be performed. When this phase passes, any attempt to change the structure raises an exception
+</ul>
+
+<h2>When you start</h2>
+<p>Brace yourself for complex native API, which is far less intuitive than in webSQL. IDB simplifies it with help of Promises, keeping most but not all IndexedDB features. It is not needed to be familiar with Promises and IndexedDB to start with IDB, but the more features coder knows, the cleaner and simpler code he can write.
+<p>Consider running IndexedDB in Web Worker, for it is not dependent on DOM and runs many asynchronous operations, so the main thread is not cluttered with accidental complexity of the data manipulation.
+<p>IndexedDB is created locally in origin separated spaces. It is created even without web server, in the <tt>file://</tt> origin.

@@ -6,17 +6,13 @@
  * Compatible with all modern browsers.
  * To use store structure manipulation functions, this script needs to be loaded early.
  *
- * Aimed to publish as HELL LICENSE v66.6 (should have 6.666 bytes, has only 5.555 so far)
+ * Published as HELL LICENSE v66.6 (6.666 bytes source code)
  * https://janturon.github.io/LICENSE.md, HELL manifesto: https://janturon.github.io/HellCode.html
  * If you keep the file size after your modification, you have my blessing. Keep the code simple.
- *
+ ************
 **/
 const IDB = new function(V) {
   let T = this;
-
-  // upgrading property
-  var late = 0;
-  Object.defineProperty(T, "upgrading", { get: _=>!late });
 
   // Promises abstraction
   let YN = (o,Y,N) => {
@@ -26,30 +22,37 @@ const IDB = new function(V) {
   T.promise = obj => new Promise((Y,N) => YN(obj,Y,N));
 
   // enable upgrade phase by increasing version number everytime
+  var late = 0;
   if(V=localStorage.getItem("IDB_v")); else V=Math.random()*1e7;
+  var db = null;
+  Object.defineProperty(T, "DB", { get: _=>db });
   let DB = new Promise((Y,N,O)=> {
+    late = 0;
     localStorage.setItem("IDB_v", ++V);
     O = indexedDB.open("DB",V);
     O.onupgradeneeded = _=> {
       Object.entries(UE).forEach(i =>
         i[1].forEach(j => U[i[0]].apply(O.result,j))
       );
-      late = 1;
+      UE = {}; late = 1;
     }
-    YN(O,Y,N);
-  });
+    YN(O,null,N);
+    O.onsuccess = _ => Y(db=O.result);
+    O.onabort = O.onclose = O.onerror = T.sentinel;
+  }).catch(_=>_);
 
   // store related, mostly upgrade phase functions
   let U = {};
-  U.storeExists = function(ret,name) {
-    ret(this.objectStoreNames.contains(name));
+  let iname = n => Array.isArray(n) ? n.join("_") : n;
+  U.stores = function(ret) {
+    ret(this.objectStoreNames);
   }
   U.storeCreate = function(ret,name,indices,force) {
     if(this.objectStoreNames.contains(name)) force ? this.deleteObjectStore(name) : ret(false);
     if(!indices) indices = [undefined];
     const pk = indices.shift();
     let store = this.createObjectStore(name, pk ? {keyPath: pk} : {autoIncrement: true});
-    indices.forEach(name => store.createIndex(name,name));
+    indices.forEach(name => store.createIndex(Array.isArray(name)?name.join("_"):name, name));
     ret(true);
   }
   U.storeDelete = function(ret,name) {
@@ -57,13 +60,27 @@ const IDB = new function(V) {
     if(exists) this.deleteObjectStore(name);
     ret(exists);
   }
+  U.indices = function(ret,store) {
+    ret(T.store(store).then(req => req.indexNames));
+  }
+  U.indexCreate = function(ret,store,index,params) {
+    ret(T.store(store,1).then(req => req.createIndex(iname(index),index,params)));
+  }
+  U.indexDelete = function(ret,store,index) {
+    ret(T.store(store,1).then(req => {
+      var ex = req.indexNames.contains(index);
+      if(ex) req.deleteIndex(iname(index));
+      return ex;
+    }));
+  }
   // Load all instantiations of these functions for execution in upgrade event
   UE = {};
   Object.entries(U).forEach(i => {
     let key = i[0];
-    UE[key] = [];
     T[key] = function() { return new Promise((Y,N) =>
-      late? N(`Too late to call ${key}, upgrade phase passed.`) : UE[key].push([Y,...arguments])
+      if(!UE[key]) UE[key] = [];
+      UE[key].push([Y,...arguments]);
+      if(late) (db.close(),open());
     )}
   });
 
@@ -72,6 +89,10 @@ const IDB = new function(V) {
   F.store = function(name,write) {
     return this.transaction(name, write?"readwrite":"readonly").objectStore(name);
   }
+  T.getStore = (name,write) => db && db.transaction(name, trtype(write)).objectStore(name);
+  T.getStores = _ => db && db.objectStoreNames;
+  T.getIndex = (store,name) => db && db.getStore(store).index(name);
+  T.getIndices = store => db && T.getStore(store).indexNames;
   F.sert = function(name, data, pk, fn) {
     return new Promise((Y,N) => {
       if(!data.map) data = [data];
@@ -88,8 +109,11 @@ const IDB = new function(V) {
   F.clear = function(name) {
     return new Promise((Y,N,_) => T.store(name,1).then(req => YN(req.clear(),Y,N)));
   }
-  F.count = function(name) {
-    return new Promise((Y,N,_) => T.store(name).then(req => YN(req.count(),Y,N)));
+  F.count = function(store, index) {
+    return new Promise((Y,N,_) => T.store(store).then(req => {
+      if(index) req = req.index(index);
+      YN(req.count(),Y,N);
+    }));
   }
   T.getRange = (fn1, arg1, fn2, arg2) => {
     if(!fn1) return;
@@ -115,18 +139,23 @@ const IDB = new function(V) {
       Y(req.openCursor(range,dir));
     }));
   }
-  F.update = function(name, index, range, updator) {
-    if(typeof index == "function") (updator = index, index = undefined);
-    else if(typeof range == "function") (updator = range, range = undefined);
+  F.updel = function(name, index, range, itor, fn) {
+    if(typeof index == "function") (itor = index, index = undefined);
+    else if(typeof range == "function") (itor = range, range = undefined);
     return T.store(name,1).then(req => new Promise(Y => {
       var recs = 0;
       if(index) req = req.index(index);
       req = req.openCursor(range);
       req.onsuccess = (e,c) => {
-        (c=e.target.result) && updator(c.value) && (recs++) && c.update(c.value);
+        (c=e.target.result) && itor(c.value) && (recs++) && c[fn](c.value);
         c ? c.continue() : Y(recs);
       }
     }));
+  }
+  F.update = (name, index, range, itor) => F.updel(name, index, range, itor, "update");
+  F.delete = (name, index, range, itor) => F.updel(name, index, range, itor, "delete");
+  F.deleteOne = function(name, pk) {
+    return new Promise((Y,N) => T.store(name,1).then(req => YN(req.delete(pk),Y,N)));
   }
   T.walk = handler => req => req.onsuccess = (e,c) => (c=e.target.result) && handler(c.value, c.continue());
   T.filter = passer => req => new Promise(Y => {
@@ -139,9 +168,6 @@ const IDB = new function(V) {
   });
   F.record = function(name, pk) {
     return new Promise((Y,N) => T.store(name).then(req => YN(req.get(pk),Y,N)));
-  }
-  F.delete = function(name, range) {
-    return new Promise((Y,N) => T.store(name,1).then(req => YN(req.delete(range),Y,N)));
   }
   // call the functions in Promise after the DB is loaded
   let call = (fn,args) => DB.then(db => fn.apply(db,args));

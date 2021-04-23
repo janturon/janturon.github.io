@@ -3,85 +3,213 @@
 <h1>IDB reference</h1>
 <div id="ref">
 
-<h3>Database manipulation functions</h3>
+<h3>Basic IDB objects</h3>
 <ul>
   <li><a href="#sentinel">IDB.sentinel</a> registers handler for unexpected database events
+  <li><a href="#promise">IDB.promise</a> creates a Promise object from IDBRequest object
+	<li><a href="#version">IDB.version</a> promises the version of IDB database
+	<li><a href="#dbpromise">IDB.dbPromise</a> promises safe IDBDatabase object
+	<li><a href="#db">IDB.db</a> returns unsafe IDBDatabase object
+	<li><a href="#transaction">IDB.transaction</a> creates or promises an IDBTransaction object
+	<li><a href="#store">IDB.store</a> returns or promises a IDBStore object
+	<li><a href="#index">IDB.index</a> returns or promises a IDBIndex object
+  <li><a href="#range">IDB.range</a> creates an IDBKeyRange object
+  <li><a href="#cursor">IDB.cursor</a> promises IDBCursor from object store
 </ul>
-<b>Stores</b>
+<h3>Database manipulation</h3>
 <ul>
-  <li><a href="#stores">IDB.stores</a> promise to list of object stores
-  <li><a href="#storecreate">IDB.storeCreate</a> promise to object store creation
-  <li><a href="#storedelete">IDB.storeDelete</a> promise to object store deletion
+	<li><a href="#upgrade">IDB.upgrade</a> increments the IDB version
 </ul>
-<b>Indices</b>
+<p><b>Stores</b>
 <ul>
-  <li><a href="#indices">IDB.indices</a> promise to list of object indices
-  <li><a href="#indexcreate">IDB.indexCreate</a> promise to object index creation
-  <li><a href="#indexdelete">IDB.indexDelete</a> promise to object index deletion
+  <li><a href="#stores">IDB.stores</a> returns or promises list of object stores
+  <li><a href="#storecreate">IDB.storeCreate</a> promises to create object store
+  <li><a href="#storedelete">IDB.storeDelete</a> promises to delete object store
+</ul>
+<p><b>Indices</b>
+<ul>
+  <li><a href="#indices">IDB.indices</a> returns or promises list of store indices
+  <li><a href="#indexcreate">IDB.indexCreate</a> promises to create store index
+  <li><a href="#indexdelete">IDB.indexDelete</a> promises to delete store index
 </ul>
 
 <h3>Object manipulation functions</h3>
 <ul>
-  <li><a href="#insert">IDB.insert</a> promise to insert records into object store
-  <li><a href="#upsert">IDB.upsert</a> promise to update or insert records in object store
-  <li><a href="#update">IDB.update</a> update some records in object store
-  <li><a href="#delete">IDB.delete</a> promise to delete records from object store
-  <li><a href="#clear">IDB.clear</a> promise to delete all records from object store
+  <li><a href="#insert">IDB.insert</a> promises to insert records into object store
+  <li><a href="#upsert">IDB.upsert</a> promises to update or insert records in object store
+  <li><a href="#update">IDB.update</a> promises to update some records in object store
+  <li><a href="#deleteone">IDB.deleteOne</a> promises to delete a single record from object store
+  <li><a href="#delete">IDB.delete</a> promises to delete multiple records from object store
+  <li><a href="#clear">IDB.clear</a> promises to delete all records from object store
 </ul>
 
 <h3>Object query functions</h3>
 <ul>
-  <li><a href="#count">IDB.count</a> promise to count all objects in object store
-  <li><a href="#record">IDB.record</a> promise to object from object store obtained by primary key
-  <li><a href="#cursor">IDB.cursor</a> promise to cursor from object store
+  <li><a href="#count">IDB.count</a> promises number of all objects in object store
+  <li><a href="#record">IDB.record</a> promises object from object store obtained by primary key
+  <li><a href="#cursor">IDB.cursor</a> promises IDBCursor from object store
   <ul>
     <li><a href="#walk">IDB.walk</a> calls a function for each object in cursor
     <li><a href="#filter">IDB.filter</a> filters objects in cursor
   </ul>
 </ul>
 
-<h3>Helper functions</h3>
-<p>These functions are not dependent to previous ones and they are needed only if you decide to work directly with IndexedDB facade.
-<ul>
-  <li><a href="#store">IDB.store</a> creates a Promise to transaction with IDBObjectStore object
-  <li><a href="#getrange">IDB.getRange</a> creates an IDBKeyRange object
-  <li><a href="#promise">IDB.promise</a> creates a Promise from IDBRequest
-</ul>
-
-<h3>User interaction functions</h3>
-<p>These functions return directly requested objects without promise. They are not reliable when the script is loading, but are safe to use when the database connection is ready (in user interaction like button click).
-<ul>
-  <li><a href="#db">IDB.DB</a> IDBDatabase object
-  <li><a href="#getstore">IDB.getStore</a> get an object store
-  <li><a href="#getstores">IDB.getStores</a> get list of object stores
-  <li><a href="#getindex">IDB.getIndex</a> get a store index
-  <li><a href="#getindices">IDB.getIndices</a> get list of store indices
-</ul>
 
 
-<h1>Database manipulation functions</h1>
+<h1>Basic IDB Objects</h1>
 
 <a name="sentinel"></a>
 <h2>IDB.sentinel(function handler)</h2>
 
 <h3>Params</h3>
-<p><b>handler</b> a function called on unexpected database events. It receives an event parameter and the type of the event can be retrieved in <tt>event.type</tt> property.
+<p><b>handler</b> a function called on unexpected database events. It receives object parameter describing the error. Default handler is <tt>console.error</tt>, which is in action until redefined. IDB functions returning Promise don't reject unless the sentinel throws - in that case, the error can be caught immediately in <tt>.catch()</tt> Promise chain method.
 
-<h3>Event types</h3>
-<p><b>abort</b> transaction was aborted
-<p><b>close</b> database was unexpectedly closed
-<p><b>error</b> Most of the IDB functions return Promise and error can be caught by <tt>catch()</tt> method on them. If the error is not caught, it bubbles up to the sentinel which serves as common error handler.
+<h3>Parameter object</h3>
+<p>The handler parametr object has these properties:
+<p><b>source</b> name of the IDB function that caused the issue
+<p><b>message</b> the issue message
+<p><b>params</b> the parameter values to the IDB function
 
-<a name="stores"></a>
-<h2>Promise IDB.stores()</h2>
+<a name="promise"></a>
+<h2>Promise IDB.promise(IDBRequest request)</h2>
 
 <h3>Promise resolve</h3>
-<p><tt>DOMStringList</tt>, list of available object stores
+<p>Resolves on <tt>req.onsuccess</tt> with value <tt>req.result</tt>
+
+<h3>Promise reject</h3>
+<p>Rejects on <tt>req.onerror</tt> with value <tt>req.error</tt>
+
+<h3>Examples</h3>
+<xmp>
+IDB.promise(indexedDB.open("IDB"))     // Promise from IDBOpenDBRequest
+.then(db => db.transaction("users"))   // create transaction from the db
+.then(tx => tx.objectStore("users"))   // get store from the transaction
+.then(s  =>  s.index("name"))          // get index from the store
+.then(i  =>IDB.promise(i.get("John"))) // Promise from request for the key value
+.then(console.log)
+</xmp>
+<p>logs object from store users with index name=John</p><br>
+<xmp>
+const teenagers = IDB.getRange("gte", 13, "lt", 20);
+IDB.store("users")                            // returns Promise
+.then(st => st.index("age"))                  // returns directly
+.then(i  => IDB.promise(i.getAll(teenagers))) // returns IDBRequest
+.then(console.log);
+});
+</xmp>
+<p>logs teenagers from users store
+
+<a name="version"></a>
+<h2>Promise IDB.version()</h2>
+
+<h3>Promise resolve</h3>
+<tt>unsigned int</tt> current version of <i>IDB</i> database. If it is not created, random number 1 to 10e7 is picked as initial version (so the age of the page/database can not be guessed by clients)
+
+<a name="dbpromise"></a>
+<h2>Promise IDB.dbPromise</h2>
+<p>Methods creating or dropping stores or indices can be run only during <tt>onupgradeneeded</tt> event soon after the database is opened. When they are called, the database needs to be closed and reopened. During the closing the database waits for running transactions to finish and doesn't accept new ones. Reopening is also made in separate thread and is not instantious. <i>dbPromise</i> avoids this gap when <tt>IDBRequest</tt> would cause error.
+
+<h3>Promise resolve</h3>
+<p>safe <tt>IDBDatabase</tt> object with with opened connection to <i>IDB</i> database
+
+<a name="db"></a>
+<h2>IDBDatabase IDB.db</h2>
+<p>Returned object may be null during the database opening period or unusable during the closing period when database manipulation functions are called. If such events don't happen (like clicking the button to retrieve some storage data) it is more or less safe to call the db object directly to simplify the code. (Keep in mind the <i>IDB</i> database can be changed in another browser tab in the same domain and the browser or OS may decide to close the connection for various reasons.)
+
+<a name="transaction"></a>
+<h2 style="letter-spacing:-2px">Promise|IDBTransaction IDB.transaction([bool promise,] string|array stores[, bool w])</h2>
+
+<h3>Params</h3>
+<p><b>promise</b> if <tt>true</tt> is provided as the first argument, Promise to IDBTransaction is returned. This can be skipped if the <a href="#dbpromise">unsafe phase</a> does not occur diring the call in which case the object is returned directly. Optional, default false.
+<p><b>stores</b> can be a <tt>string</tt> (single store) or <tt>string[]</tt> (multiple stores) involved in the transaction. Multiple stores allows to revert the data changes in the middle of the writing process simply by calling <tt>abort()</tt> on the transaction.
+<p><b>w</b> truthy value means transaction with writing priviledges, otherwise it is read-only (multiple read-only transaction may access the same store simultaneously)
 
 <h3>Example</h3>
 <xmp>
-IDB.stores().then(console.log);
+function createAccounts() {
+  IDaccounts.innerHTML = "";
+	var tx = IDB.transaction(["users","accounts"], true);
+	IDB.cursor(tx, "users").then(IDB.walk(createUserAccount));
+}
+
+function createUserAccount(rec, pk, tx) {
+	const acc = val => ({userId: pk, credit: val});
+	if(rec.name=="Kyle") IDB.insert(tx, "accounts", acc(200));
+}
 </xmp>
+<p>Create account with 200 credits for every user named Kyle
+
+<a name="store"></a>
+<h2>Promise|IDBObjectStore IDB.store([bool promise,] string store[, bool w])</h2>
+
+<h3>Params</h3>
+<p><b>promise</b> see <a href="#transaction">transaction</a>
+<p><b>store</b> the store name on which a single-store transaction is opened
+<p><b>w</b> see <a href="#transaction">transaction</a>
+
+<h3>Example</h3>
+<xmp>
+const getUser = id => IDB.promise(IDB.store("users").get(id));
+const showUser = async id => output.innerHTML = await getUser(id);
+<button onclick="showUser(23)">Show 23</button>
+<output id="output"></output>
+</xmp>
+<p>place user with id=23 into output element
+
+<a name="index"></a>
+<h2>Promise|IDBIndex IDB.index([bool promise,] string store, string name)</h2>
+
+<h3>Params</h3>
+<p><b>promise</b> see <a href="#transaction">transaction</a>
+<p><b>store</b> the store name on which the index is defined
+<p><b>name</b> the name of the index which should be returned
+
+<h3>Example</h3>
+<xmp>
+IDB.promise(IDB.index("users","age").getAll("gte",13,"lt",20)).then(console.log)
+</xmp>
+<p>log all teenagers from users store
+
+<a name="range"></a>
+<h2>IDBKeyRange IDB.range("eq", value1)</h2>
+<h2>IDBKeyRange IDB.range("lt"|"lte", value1)</h2>
+<h2>IDBKeyRange IDB.range("gt"|"gte", value1[, "lt"|"lte", value2])</h2>
+
+<h3>Notes</h3>
+<p>Creates a <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a> object in a way common in XSL or bash habits, not the weird way the ad-hoc standard defines. This object is created internally in IDB.cursor and IDB.delete functions and (together with IDB.store) provides tools to work directly with IndexedDB.
+
+<h3>Params</h3>
+<p><b>functors</b> identifiers are: <u>eq</u> (equals), <u>lt</u> (lower than), <u>lte</u> (lower than or equal), <u>gt</u> (greater than), <u>gte</u> (greater than or equal)
+<p><b>value1, value2</b> second parameter to the above function (the first one is the key of the object).
+
+<h3>Example</h3>
+<xmp>
+const teenagers = IDB.getRange("gte", 13, "lt", 20);
+</xmp>
+<p>Creates a functor that (applied on age index) selects all teenagers from storage (sorted by age). See the full example below.
+
+
+<h1>Database manipulation</h1>
+
+<a name="upgrade"></a>
+<h2>Promise IDB.upgrade()</h2>
+<p>Upgrades (closes and reopens) the database with incremented version number without doing any change in the structure.
+
+<h3>Promise resolve</h3>
+<p><tt>undefined</tt>, IDB.db is safe after the operation
+
+<a name="stores"></a>
+<h2>Promise|DOMStringList IDB.stores([bool promise])</h2>
+
+<h3>Params</h3>
+<p><b>promise</b> see <a href="#transaction">transaction</a>
+
+<h3>Example</h3>
+<xmp>
+IDB.sentinel = function() { throw arguments; }
+IDB.stores(true).then(console.log).catch(_=>console.error("IDB is blocked"));
+</xmp>
+<p>Log all stores in IDB and handle the blocked state
 
 <h3>Notes</h3>
 <p>In the user interaction mode, <a href="#getstores">IDB.getStores()</a> can be called instead to return the list directly.
@@ -96,6 +224,9 @@ IDB.stores().then(console.log);
 
 <h3>Promise resolve</h3>
 <p><tt>true</tt> if the store was created, <tt>false</tt> if not
+
+<h3>Promise reject</h3>
+<p><tt>string</tt> the store name which could not be created, when force is set to true (likely due to HW problem or resources locked).
 
 <h3>Examples</h3>
 <xmp>
@@ -119,6 +250,9 @@ IDB.storeCreate("log").then(
 <h3>Promise resolve</h3>
 <p><tt>true</tt> if store existed and has been deleted, <tt>false</tt> otherwise
 
+<h3>Promise reject</h3>
+<p><tt>string</tt> the store name which could not be deleted, when force is set to true (likely due to HW problem or resources locked).
+
 <h3>Example</h3>
 <xmp>
 var stack = [];
@@ -134,17 +268,15 @@ Promise.all(stack).then(_=> console.log("All stores were deleted"));
 
 
 <a name="indices"></a>
-<h2>Promise IDB.indices(string storage)</h2>
+<h2>Promise IDB.indices([bool promise,] string storage)</h2>
 
 <h3>Params</h3>
+<p><b>promise</b> see <a href="#transaction">transaction</a>
 <p><b>storage</b> the storage name to get the indices from
-
-<h3>Promise resolve</h3>
-<p><tt>DOMStringList</tt>, list of available indices
 
 <h3>Example</h3>
 <xmp>
-IDB.indices("users").then(console.log);
+IDB.indices(true,"users").then(console.log);
 </xmp>
 
 <h3>Notes</h3>
@@ -160,6 +292,9 @@ IDB.indices("users").then(console.log);
 
 <h3>Promise resolve</h3>
 <p><tt>IDBIndex</tt>, the newly created index
+
+<h3>Promise reject</h3>
+<p><tt>[store,index,params]</tt> the store on which the index with provided params could not be created.
 
 <h3>Example</h3>
 <xmp>
@@ -186,6 +321,9 @@ IDB.indexCreate("users", ["width", "height"]);
 <h3>Promise resolve</h3>
 <p><tt>bool</tt>, true if the index existed and was deleted, false otherwise
 
+<h3>Promise reject</h3>
+<p><tt>[store,index]</tt> the store on which the index could not be deleted.
+
 <h3>Example</h3>
 <xmp>
 IDB.indexDelete("users", "width_height");
@@ -199,17 +337,18 @@ IDB.indexDelete("users", "width_height");
 <h1>Object manipulation functions</h1>
 
 <a name="insert"></a>
-<h2>Promise IDB.insert(string name, object data)</h2>
+<h2>Promise IDB.insert(string name, object data[, keyPath])</h2>
 
 <h3>Params</h3>
 <p><b>name</b> name of the store where the data goes
 <p><b>data</b> can be object or array of objects - in that case all the array items are added as records one by one in the order in the array.
+<p><b>keyPath</b> the unique key path, if the store was created without keys (see <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBDatabase/createObjectStore">out-of-line keys</a>). If the object store was created by <a href="#storecreate">IDB.storeCreate</a> function with first key set to null, it is autoincrement out-of-line key. Optional, do not use with inline keys.
 
 <h3>Promise resolve</h3>
 <p><tt>int</tt> the number of records inserted, resolves only if all the records were inserted successfully.
 
 <h3>Promise reject</h3>
-<p><tt>int</tt> the number of successfully inserted records before the insertion failed.
+<p><tt>[name,data,keyPath,fn]</tt> the parameters that caused the insert fail. Data can be array (if the whole insert failed, i.e. non-existent store) or a single record (i.e. its keyPath already exists in the store). <i>fn</i> is "add"; the same underlying function is used for <a href="#upsert">IDB.upsert</a>, where <i>fn</i> is "put".
 
 <h3>Example</h3>
 <xmp>
@@ -223,11 +362,11 @@ IDB.insert("log", [
 </xmp>
 
 <h3>Notes</h3>
-<p>Records are structural clones of the original objects, which is functionally equivalent to serialized and then deserialized original object (references are transformed to values).
+<p>Records are structural clones of the original objects, which is functionally equivalent to serialized and then deserialized original object (references are transformed to values). If inline <i>keyPath</i> was specified on the object store, <i>keyPath</i> parameter must not be used.
 
 <a name="upsert"></a>
-<h2>Promise IDB.upsert(string name, object data)</h2>
-<p>This function acts like <tt>IDB.insert</tt> when the record with the same primary key doesn't exist in the store. When it does, <tt>IDB.insert</tt> rejects, while <tt>IDB.update</tt> updates existing record.
+<h2>Promise IDB.upsert(string name, object data[, keyPath])</h2>
+<p>This function acts like <tt>IDB.insert</tt> when the record with the same primary key (or keyPath) doesn't exist in the store. When it does, <tt>IDB.insert</tt> rejects, while <tt>IDB.update</tt> updates existing record.
 
 <a name="update"></a>
 <h2>IDB.update(string name[, string index[, IDBKeyRange range]], function updator)</h2>
@@ -240,6 +379,9 @@ IDB.insert("log", [
 
 <h3>Promise resolve</h3>
 <p><tt>int</tt>, the number of affected records
+
+<h3>Promise reject</h3>
+<p><tt>[name,index,range,fn]</tt> the params that caused the update to fail. <i>fn</i> is "update". Same underlying function is used for <a href="#delete">IDB.delete</a>, where the <i>fn</i> is "delete".
 
 <h3>Example</h3>
 <xmp>
@@ -264,6 +406,12 @@ IDB.update("users", o=>o.age++).then(console.log);
 <p><b>store</b> store name to delete the record from
 <p><b>pk</b> the primary key value
 
+<h3>Promise resolve</h3>
+<p><tt>undefined</tt>
+
+<h3>Promise reject</h3>
+<p><tt>[store, pk]</tt> the params that caused the delete to fail.
+
 <h3>Notes</h3>
 <p>Deletes a single record based on the primary key value, which is safe as far as you can guarantee the PK value is not compromised. IDB.update and IDB.delete can destroy a lot of data and should be therefore called with special care.
 
@@ -274,6 +422,9 @@ IDB.update("users", o=>o.age++).then(console.log);
 
 <h3>Promise resolve</h3>
 <p><tt>undefined</tt>
+
+<h3>Promise reject</h3>
+<p><tt>string</tt> the name of the store that failed to clear
 
 <h3>Notes</h3>
 <p>This function was intentionally separated from <tt>IDB.delete</tt> to avoid deleting all records by mistake.
@@ -325,9 +476,11 @@ prev.onclick = async function(id) {
 
 
 <a name="cursor"></a>
-<h2 style="letter-spacing:-2px">Promise IDB.cursor(string name[, string index[, IDBKeyRange range][, string dir]])</h2>
+<h2>Promise IDB.cursor([IDBTransaction tx,] string name<br>
+[, string index[, IDBKeyRange range][, string dir]])</h2>
 
 <h3>Params</h3>
+<p><b>tx</b> transaction on which the cursor is defined. If ommited, it is created as single-store read-only transaction from the name parameter.
 <p><b>name</b> name of the storage to sort or filter.
 <p><b>index</b> index to use for sorting or filtering. Optional, if falsy it sorts the store by primary key (default).
 <p><b>range</b> see <a href="#getrange">IDB.getRange</a>. Optional, falsy values means no filtering.
@@ -347,120 +500,19 @@ IDB.cursor("users","name").then(IDB.filter(myFilter)).then(console.log);
 </xmp>
 
 <h3>Notes</h3>
-<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> calls its <tt>onsuccess</tt> method for each record found. This method creates cursor in read-only transaction. But IDBCursor has also <tt>update</tt> method: this is utilized in <tt>IDB.update</tt> function, while read only scenarios can be mostly solved with <tt>IDB.walk</tt> and <tt>IDB.filter</tt> below. These functions are to be called in <tt>IDB.cursor().then()</tt>. Their only parameter is a function, that gets called for every record the cursor yields and gets structural clone of the record as their only parameter.
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> calls its <tt>onsuccess</tt> method for each record found. This method creates cursor in read-only transaction. But IDBCursor has also <tt>update</tt> method: this is utilized in <tt>IDB.update</tt> function, while read only scenarios can be mostly solved with <tt>IDB.walk</tt> and <tt>IDB.filter</tt> below. These functions are to be called in <tt>IDB.cursor().then()</tt>. Their only parameter is a function, that gets called for every record the cursor yields.
+<p>The following functions get these parameters:
 
+<p><b>record</b> structural clone of the record as their only parameter
+<p><b>pk</b> primary key value
+<p><b>tx</b> the transaction of the cursor (meaningful on for write transactions)
+
+<a name="walk"></a>
 <h3>IDB.walk</h3>
 <p>The return value of the parameter function is ignored, it is meant just to traverse all the records.
 
+<a name="filter"></a>
 <h3>IDB.filter</h3>
 <p>The parameter function should return truthy value iff the record shall pass the filter. The <tt>IDB.filter</tt> function itself then returns array of filtered data (in Promise) for further processing.
-
-
-<h1>Helper functions</h1>
-
-<a name="store"></a>
-<h2>Promise IDB.store(string name[, bool write])</h2>
-
-<h3>Params</h3>
-<p><b>name</b> name of the requested store
-<p><b>write</b> true for read/write transaction, false for read-only one. Optional, default false.
-
-<h3>Promise resolve</h3>
-<p><tt>IDBObjectStore</tt> transaction object over the requested store, used by most other functions and most of the time the entry point to further IndexedDB calls.
-
-<h3>Example</h3>
-<xmp>
-IDB.store("users").then(store => console.log(store.indexNames));
-</xmp>
-<p>Lists indexes defined over users store
-
-
-<a name="getrange"></a>
-<h2>IDBKeyRange IDB.getRange("eq", value1)</h2>
-<h2>IDBKeyRange IDB.getRange("lt"|"lte", value1)</h2>
-<h2>IDBKeyRange IDB.getRange("gt"|"gte", value1[, "lt"|"lte", value2])</h2>
-
-<h3>Notes</h3>
-<p>Creates a <a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBKeyRange">IDBKeyRange</a> object in a way common in XSL or bash habits, not the weird way the ad-hoc standard defines. This object is created internally in IDB.cursor and IDB.delete functions and (together with IDB.store) provides tools to work directly with IndexedDB.
-
-<h3>Params</h3>
-<p><b>functors</b> identifiers are: <u>eq</u> (equals), <u>lt</u> (lower than), <u>lte</u> (lower than or equal), <u>gt</u> (greater than), <u>gte</u> (greater than or equal)
-<p><b>value1, value2</b> second parameter to the above function (the first one is the key of the object).
-
-<h3>Example</h3>
-<xmp>
-const teenagers = IDB.getRange("gte", 13, "lt", 20);
-</xmp>
-<p>Creates a functor that (applied on age index) selects all teenagers from storage (sorted by age). See the full example below.
-
-
-<a name="promise"></a>
-<h2>Promise IDB.promise(IDBRequest req)</h2>
-
-<h3>Promise resolve</h3>
-<p>Resolves on <tt>req.onsuccess</tt> with value <tt>req.result</tt>
-
-<h3>Promise reject</h3>
-<p>Rejects on <tt>req.onerror</tt> with value <tt>req.error</tt>
-
-<h3>Example</h3>
-<xmp>
-const teenagers = IDB.getRange("gte", 13, "lt", 20);
-IDB.store("users").then(req => {
-  req = req.index("age").getAll(teenagers);
-  IDB.promise(req).then(console.log);
-});
-</xmp>
-
-
-
-<h1>User interaction functions</h1>
-
-<h3>Notes</h3>
-<p>Following functions are null when the page is loaded and the database is beeing opened or created. It is safe to call it on user interaction events like button clicks or after the first IDB fulfilled promise. If the database could not be opened for some reason, it is kept null. Upgrade phase cannot be accessed from this property.
-
-<a name="db"></a>
-<h2>IDBDatabase IDB.DB</h2>
-
-<h3>Value</h3>
-<p><tt>IDBDatabase</tt> object of this database (IDB).
-
-
-<a name="getstore"></a>
-<h2>IDBObjectStore IDB.getStore(string name[, bool write])</h2>
-
-<h3>Params</h3>
-<p><b>name</b> name of the requested store
-<p><b>write</b> true for read/write transaction, false for read-only one. Optional, default false.
-
-<h3>Return</h3>
-<p><tt>IDBObjectStore</tt> transaction object over the requested store, used by most other functions and most of the time the entry point to further IndexedDB calls.
-
-
-<a name="getstore"></a>
-<h2>DOMStringList IDB.getStores()</h2>
-
-<h3>Return</h3>
-<p><tt>DOMStringList</tt> all stores in this database.
-
-
-<a name="getindex"></a>
-<h2>IDBIndex IDB.getIndex(string store, string name)</h2>
-
-<h3>Params</h3>
-<p><b>store</b> the store to get the index from
-<p><b>name</b> the name of the index
-
-<h3>Return</h3>
-<p><tt>IDBIndex</tt>
-
-<a name="getindices"></a>
-<h2>DomStringList IDB.getIndices(string store)</h2>
-
-<h3>Params</h3>
-<p><b>store</b> name of the store to get indices from
-
-<h3>Return</h3>
-<p><tt>DOMStringList</tt> all indices names in the store
 
 </div>

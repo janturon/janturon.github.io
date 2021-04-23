@@ -1,0 +1,95 @@
+<script src="src/idb.js"></script>
+<link rel="stylesheet" href="src/style.css">
+
+<h1>IDB</h1>
+
+<p><a href="idb.html">Back to IDB</a>
+
+<p>See the source code and the browser Application inspector for more details.
+
+<h2>1. Create and list stores</h2>
+<button onclick="deleteStores()">Delete all</button>
+<button onclick="createStores()">Create all</button><br>
+<output id="IDstores"></output>
+
+<script>
+	const showInfo = list => IDstores.innerHTML = "<b>stores</b> "+([...list].join(", ")||"none");
+  IDB.stores(true).then(showInfo);
+  const getStores = _=> showInfo(IDB.stores());
+  const deleteStores = _=>
+		[...IDB.stores()].forEach(IDB.storeDelete) ||
+		IDB.dbPromise.then(getStores) &&
+		(IDfill.innerHTML = IDaccounts.innerHTML = "");
+  const createStores = _=>
+		IDB.storeCreate("users") &&
+		IDB.storeCreate("accounts",[null,"userId"]) &&
+		IDB.indexCreate("users", "name", {unique: true}) && 0 ||
+		IDB.dbPromise.then(getStores);
+</script>
+
+<h2>2. Populate stores with data</h2>
+<p>Create two accounts for John and one for Kyle</p>
+<button onclick="defaultData()">Fill data</button><br>
+<output id="IDfill"></output>
+<script>
+IDB.sentinel = function() {
+	console.log(arguments);
+	throw arguments;
+}
+
+function defaultData() {
+	Promise.resolve()
+		.then(_=> IDB.clear("users"))
+		.then(_=> IDB.clear("accounts"))
+		.then(_=> createUsers())
+		.then(_=> createAccounts())
+		.then(_=> IDfill.innerHTML = "data created")
+		.catch(_=>IDfill.innerHTML = "data not created, create stores first");
+}
+
+const createUsers = _ =>
+	IDB.insert("users", [
+    {name:"John"},
+    {name:"Kyle"}
+  ]);
+
+function createAccounts() {
+  IDaccounts.innerHTML = "";
+	var tx = IDB.transaction(["users","accounts"], true);
+	IDB.cursor(tx, "users").then(IDB.walk(createUserAccount));
+}
+
+function createUserAccount(rec, pk, tx) {
+	const acc = val => ({userId: pk, credit: val});
+	if(rec.name=="John") IDB.insert(tx, "accounts", [acc(100), acc(50)]);
+	if(rec.name=="Kyle") IDB.insert(tx, "accounts", acc(200));
+}
+</script>
+
+<h2>3. Read the data</h2>
+<button onclick="listAccounts()">Load total credit per user</button><br>
+<output id="IDaccounts"></output>
+<script>
+function listAccounts() {
+  IDaccounts.innerHTML = "";
+	IDB.cursor("users")
+	.then(IDB.walk(listUserAccounts))
+	.then(_=> (IDaccounts.innerHTML=="") && (IDaccounts.innerHTML = "no accounts, fill data first"))
+	.catch(_=> IDaccounts.innerHTML = "create stores first");
+}
+
+function listUserAccounts(rec, pk, tx) {
+	var div = document.createElement("div");
+	div.innerHTML = `<b>${rec.name}</b>'s total credit: `;
+	div.sum = 0;
+	IDaccounts.appendChild(div);
+	IDB.cursor("accounts","userId",IDB.range("eq",pk))
+	.then(IDB.walk(accountsInfo.bind(div)))
+	.then(_=> div.innerHTML+= div.sum);
+}
+
+function accountsInfo(rec, pk, tx) {
+	this.sum+= rec.credit;
+}
+
+</script>

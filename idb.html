@@ -4,9 +4,7 @@
 
 <p><a href="index.html">Back to Hell-licensed code</a>
 
-<p>Download <a href="src/idb.js">idb.js</a>
-
-<p>Read <a href="idbref.html">the manual</a>
+<p>Download <a href="src/idb.js">idb.js</a>, Quick start with <a href="idbex.html">dummy example</a>, Read <a href="idbref.html">the manual</a>, Learn <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">the native API</a>, Dive into <a href="https://www.w3.org/TR/IndexedDB/">W3 Specs</a>
 
 <h2>Before you even start</h2>
 <p>There is a bit misconception among some coders when they first meet IndexedDB. To avoid it, it is important to keep in mind that:
@@ -15,7 +13,7 @@
   <li><b>IndexedDB works with objects</b>, each record in store can have complex structure. They are not rows.
   <li><b>IndexedDB does not use SQL</b>, so don't think in SQL here. SQL is for tables. In stores one does not JOIN.
   <li><b>IndexedDB has indexes</b> and they are necessary for quick basic sorting and filtering. Complex operations need to be done on JS level with help of low level traversing objects called <i>cursors</i>.
-  <li><b>IndexedDB (and thus IDB) has an upgrade phase</b> called by <tt>onupgradeneeded</tt> event at the beginning of the script, where storage manipulation operations can be performed. When this phase passes, any attempt to change the structure raises an exception
+  <li><b>IndexedDB (and thus IDB) has an upgrade phase</b> called by <tt>onupgradeneeded</tt> event at the beginning of the script, where storage manipulation operations can be performed.
 </ul>
 
 <h2>When you start</h2>

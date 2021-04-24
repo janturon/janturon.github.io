@@ -90,7 +90,7 @@ IDB.promise(indexedDB.open("IDB"))     // Promise from IDBOpenDBRequest
 </xmp>
 <p>logs object from store users with index name=John</p><br>
 <xmp>
-const teenagers = IDB.getRange("gte", 13, "lt", 20);
+const teenagers = IDB.range("gte", 13, "lt", 20);
 IDB.store("users")                            // returns Promise
 .then(st => st.index("age"))                  // returns directly
 .then(i  => IDB.promise(i.getAll(teenagers))) // returns IDBRequest
@@ -103,7 +103,7 @@ IDB.store("users")                            // returns Promise
 <h2>Promise IDB.version()</h2>
 
 <h3>Promise resolve</h3>
-<tt>unsigned int</tt> current version of <i>IDB</i> database. If it is not created, random number 1 to 10e7 is picked as initial version (so the age of the page/database can not be guessed by clients)
+<p><tt>unsigned int</tt> current version of <i>IDB</i> database. If it is not created, random number 1 to 10e7 is picked as initial version (so the age of the page/database can not be guessed by clients)
 
 <a name="dbpromise"></a>
 <h2>Promise IDB.dbPromise</h2>
@@ -112,9 +112,21 @@ IDB.store("users")                            // returns Promise
 <h3>Promise resolve</h3>
 <p>safe <tt>IDBDatabase</tt> object with with opened connection to <i>IDB</i> database
 
+<h3>Example</h3>
+<xmp>
+IDB.dbPromise.then(db => db.objectStoreNames).then(console.log);
+</xmp>
+<p>List all available databases (including versions)
+
 <a name="db"></a>
 <h2>IDBDatabase IDB.db</h2>
 <p>Returned object may be null during the database opening period or unusable during the closing period when database manipulation functions are called. If such events don't happen (like clicking the button to retrieve some storage data) it is more or less safe to call the db object directly to simplify the code. (Keep in mind the <i>IDB</i> database can be changed in another browser tab in the same domain and the browser or OS may decide to close the connection for various reasons.)
+
+<h3>Example</h3>
+<xmp>
+<button onclick="console.log(IDB.db.objectStoreNames)">Databases</button>
+</xmp>
+<p>List all available databases (including versions)
 
 <a name="transaction"></a>
 <h2 style="letter-spacing:-2px">Promise|IDBTransaction IDB.transaction([bool promise,] string|array stores[, bool w])</h2>
@@ -128,13 +140,13 @@ IDB.store("users")                            // returns Promise
 <xmp>
 function createAccounts() {
   IDaccounts.innerHTML = "";
-	var tx = IDB.transaction(["users","accounts"], true);
-	IDB.cursor(tx, "users").then(IDB.walk(createUserAccount));
+  var tx = IDB.transaction(["users","accounts"], true);
+  IDB.cursor(tx, "users").then(IDB.walk(createUserAccount));
 }
 
 function createUserAccount(rec, pk, tx) {
-	const acc = val => ({userId: pk, credit: val});
-	if(rec.name=="Kyle") IDB.insert(tx, "accounts", acc(200));
+  const acc = val => ({userId: pk, credit: val});
+  if(rec.name=="Kyle") IDB.insert(tx, "accounts", acc(200));
 }
 </xmp>
 <p>Create account with 200 credits for every user named Kyle
@@ -184,7 +196,7 @@ IDB.promise(IDB.index("users","age").getAll("gte",13,"lt",20)).then(console.log)
 
 <h3>Example</h3>
 <xmp>
-const teenagers = IDB.getRange("gte", 13, "lt", 20);
+const teenagers = IDB.range("gte", 13, "lt", 20);
 </xmp>
 <p>Creates a functor that (applied on age index) selects all teenagers from storage (sorted by age). See the full example below.
 
@@ -210,9 +222,6 @@ IDB.sentinel = function() { throw arguments; }
 IDB.stores(true).then(console.log).catch(_=>console.error("IDB is blocked"));
 </xmp>
 <p>Log all stores in IDB and handle the blocked state
-
-<h3>Notes</h3>
-<p>In the user interaction mode, <a href="#getstores">IDB.getStores()</a> can be called instead to return the list directly.
 
 <a name="storecreate"></a>
 <h2>Promise IDB.storeCreate(string name[, string[] indices[, bool force]])</h2>
@@ -278,9 +287,6 @@ Promise.all(stack).then(_=> console.log("All stores were deleted"));
 <xmp>
 IDB.indices(true,"users").then(console.log);
 </xmp>
-
-<h3>Notes</h3>
-<p>In the user interaction mode, <a href="#getindices">IDB.getIndices()</a> can be called instead to return the list directly.
 
 <a name="indexcreate"></a>
 <h2>Promise IDB.indexCreate(string store, string|array index[, object params])</h2>
@@ -483,21 +489,27 @@ prev.onclick = async function(id) {
 <p><b>tx</b> transaction on which the cursor is defined. If ommited, it is created as single-store read-only transaction from the name parameter.
 <p><b>name</b> name of the storage to sort or filter.
 <p><b>index</b> index to use for sorting or filtering. Optional, if falsy it sorts the store by primary key (default).
-<p><b>range</b> see <a href="#getrange">IDB.getRange</a>. Optional, falsy values means no filtering.
+<p><b>range</b> see <a href="#range">IDB.range</a>. Optional, falsy values means no filtering.
 <p><b>dir</b> <u>next</u>, <u>nextunique</u> (ASC), <u>prev</u>, <u>prevunique</u> (DESC). Optional, default next.
 
 <h3>Promise resolve</h3>
-<p><tt>IDBCursor</tt> in read-only transaction
+<p><tt>IDBRequest</tt> that resolves in <tt>IDBCursor</tt> in read-only transaction (so the <tt>request.onsuccess</tt> event can be handled).
 
 <h3>Example</h3>
 <xmp>
-// log all users one by one to console, last inserted first
-IDB.cursor("users",null,"prev").then(IDB.walk(console.log));
-
-// log all users, sorted by name and having "an" in their name
-var myFilter = o => o.name.includes("an");
-IDB.cursor("users","name").then(IDB.filter(myFilter)).then(console.log);
+function walk(req) {
+  req.onsuccess = e => {
+    let cursor = e.target.result;
+    if(cursor) {
+      console.log(c.value);
+      cursor.continue();
+    }
+  }
+}
+IDB.cursor("users",null,"prev").then(walk);
 </xmp>
+<p>log all users one by one to console, last inserted first
+
 
 <h3>Notes</h3>
 <p><a href="https://developer.mozilla.org/en-US/docs/Web/API/IDBCursor">IDBCursor</a> calls its <tt>onsuccess</tt> method for each record found. This method creates cursor in read-only transaction. But IDBCursor has also <tt>update</tt> method: this is utilized in <tt>IDB.update</tt> function, while read only scenarios can be mostly solved with <tt>IDB.walk</tt> and <tt>IDB.filter</tt> below. These functions are to be called in <tt>IDB.cursor().then()</tt>. Their only parameter is a function, that gets called for every record the cursor yields.
@@ -510,9 +522,17 @@ IDB.cursor("users","name").then(IDB.filter(myFilter)).then(console.log);
 <a name="walk"></a>
 <h3>IDB.walk</h3>
 <p>The return value of the parameter function is ignored, it is meant just to traverse all the records.
+<xmp>
+IDB.cursor("users",null,"prev").then(IDB.walk(console.log));
+</xmp>
+<p>log all users one by one to console, last inserted first
 
 <a name="filter"></a>
 <h3>IDB.filter</h3>
 <p>The parameter function should return truthy value iff the record shall pass the filter. The <tt>IDB.filter</tt> function itself then returns array of filtered data (in Promise) for further processing.
-
+<xmp>
+var myFilter = o => o.name.includes("an");
+IDB.cursor("users","name").then(IDB.filter(myFilter)).then(console.log);
+</xmp>
+<p>log all users, sorted by name and having "an" in their name
 </div>

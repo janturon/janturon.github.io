@@ -23,8 +23,8 @@ const IDB = new function(V) {
 		.then(O => O.onsuccess = _=> handlers(O)||Y(db=O.result))
 	)
 
-	let Up,Dn,Close,
-	reopen = _=> Up || (Up=Dn=1, db.close(), Close=reopen1()),
+	let Up,Close,
+	reopen = _=> Up || (Up=1, db.close(), Close=reopen1()),
 	reopen1 = _=> new Promise(Y => T.version().then(V => {
 		let O = indexedDB.open("IDB",++V)
   	handlers(O)
@@ -32,13 +32,9 @@ const IDB = new function(V) {
 			Object.entries(UE).forEach(i => {
 				try {i[1].forEach(j => U[i[0]].apply(O.result,[O.transaction,...j]))}
 				catch(e) {err(i[0],e,i[1].slice(1))}
-			}); UE = {}
-			Up=0; if(!Dn) Y()
+			}); UE = {}; Up=0
 		}
-		O.onsuccess = _=> {
-			DB=Promise.resolve(db=O.result)
-			Dn=0; if(!Up) Y()
-		}
+		O.onsuccess = _=> Y(DB=Promise.resolve(db=O.result))
 	}))
 
 // upgrade fns

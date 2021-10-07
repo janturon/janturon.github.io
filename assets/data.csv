@@ -1,0 +1,2 @@
+Rule 1;After the program is released, for every code you add it is wise to delete the same amount of code elsewhere. The source code size needs to be roughly constant. If it grows in size, it looses effectivity.
+Rule 2;If you break <b>Rule 1</b> and your code grows, people will think about refactoring your code with fresh ideas. In several years all of your code will be deleted, so why bother writing it?

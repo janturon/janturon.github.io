@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<script src="src/csvLoad.js"></script>
+<script src="src/script.js"></script>
+
+<h1>Programming vs. expressing</h1>
+
+<p>Young enthusiastic intermediate coders instantly fell in love with problems: they would code many abstract objects, modules, bridges and extensive documentation, they would create a community around it, blogging about pseudoproblems.
+
+<p>I've really grown tired about those people. They believe that they are making the world better, but opposite is true. They flood the world with trivial codes made with OOP patterns. But patterns means something repetitive: if it is worth it, some day in some language a pattern is destined to evolve into expression. And expression simple enough that no programming is needed. If it is not worth it, then it is a mistake to program it at first place.
+
+<p>Let's demonstrate it on a task to load server-stored CSV data formatted by HTML template into some HTML container. This is complex enough (including threads) to show the point and simple enough to put it short.
+
+<p>Don't code yet, youngsters! Analyze first. And first of all realize what is not your business in this task:
+<ul>
+    <li>don't try to implement some fancy pseudocommand interpreter in the CSV source
+    <li>don't try to create WYSIWYG editor with drag&drop feature into HTML template
+    <li>don't try to provide custom styles support
+    <li>etc.
+</ul>
+
+<p>You need the CSV file name, load it from server and line by line put each of them into the template and insert the merged output into container. Nothing more. Focus.
+
+<p>If you keep it as simple as possible, anybody can easily write his custom extension. If you make your script robust, community around it will see it as a blackbox and people in it will start to ask awkward questions like <a href="https://stackoverflow.com/questions/1309452/how-to-replace-innerhtml-of-a-div-using-jquery">this one</a> making the community reinventing wheels everywhere.
+
+<p>So let's analyze:
+<ol>
+    <li>We need to load CSV. So we code <tt>fetch(file)</tt>. The result is a Promise of HTTP response.
+    <li>To extract the body from it, we continue <tt>.then(response => response.text())</tt>. The result is a Promise of string.
+    <li>We need to split the string into rows and handle each. We continue <tt>.then(data => data.split("\n").forEach(handleRow))</tt>
+    <li>The handleRow function will get a row, split it into columns and feed them another function that will do the rest. So we define it as <tt>let handleRow = row => container.innerHTML+= applyTemplate(...row.split(";"))</tt>
+    <li>The last thing we need is to take the arguments and put them into the template. We can use the native template system: string templates in backticks. To name the arguments, we can create a dynamic function <tt>let applyTemplate = eval(`(${cols})=>\`${template}\``)</tt> where cols is comma separated list of names given to the columns and used in the template.
+</ol>
+
+<p>Here the youngsters usually yell <i>eval is evil!</i>. They heard some influencers doing sharade with this catchy shortcut, they see the authorities nod when they hear it and they wish to get credit, too. When you ask them why, they autoreply <i>security!</i>. But when the CSV is on the server, it is the loader responsibility to secure it, so we delegate it. And when user input is not involved, the security is guaranteed. The real security issue is not knowing what is the limitation of security guarantees and take it for granted. So we should define the limitations instead:
+
+<ul>
+    <li>no HTML escaping in the CSV
+    <li>no quotes encapsulated chunks in the CSV, the non-encoded separator must not occur in CSV data
+    <li>no control of correct input values
+</ul>
+
+<p>Now let's put the above 5 steps into a single code and create a function from it, providing the input variables as object properties:
+
+<xmp>
+csvLoad = config => {
+    let applyTemplate = eval(`(${config.cols})=>\`${config.template}\``)
+    let handleRow = row => config.target.innerHTML+= applyTemplate(...row.split(";"))
+    fetch(config.file)
+        .then(response => response.text())
+        .then(data => data.split("\n").forEach(handleRow))
+}
+</xmp>
+
+<p>If the limitations are not needed in every use-case and can be alleviated by extension, then code it separatedly or leave it to client programmers. The less code you write, the better. For instance, does anybody want to add an optional separator? Just replace <tt>";"</tt> with <tt>config.sep||";"</tt>. But don't code it, leave to client programmers if they want it or not. Maybe they want only comma separators, so they can replace it with <tt>","</tt> so the complexity won't grow.
+
+<p>This program can be minified, but autominifiers sucks in their effectivity: we can convert the program into a single-line named expression:
+
+<xmp>
+csvLoad=D=>fetch(D.file).then(r=>r.text()).then(d=>d.split("\n").forEach(C=>
+    D.target.innerHTML+=eval(`(${D.cols})=>\`${D.template}\``)(...C.split(";"))
+))
+</xmp>
+
+<p>The simplest solution have 153 bytes, which is comparable to the 144 bytes of the problem description <i>You need the CSV file name, load it from server and line by line put each of them into the template and insert the merged output into container.</i>
+
+<p>The coding language is well-chosen and well-fit to the problem if the final code expression is roughly the same complexity as the original verbal description. But then we just translated (or encoded) the description in another language. We didn't write a program as an ordered set of instructions, we expressed it.
+
+<p>If the program can't be expressed, we should show some effort to simplify it. All thoughts are either simple or unclear: we should get rid of the unclear clutter (which is the root of confusion, which is expensive). Then the result is much less code, much less errors and much more effectivity, which is worth the time and thinking.
+
+<p>The conclusion is: don't write programs, use the right expression in appropriate language instead. The language is seldom programming.
+
+<h2>Example</h2>
+<a href="assets/data.csv">data source</a>
+
+<xmp id="_src">
+<div id="target"></div>
+<script>
+    csvLoad({
+        file: "assets/data.csv",
+        cols: "title, text",
+        template: "<h3>${title}</h3><p>${text}",
+        target: document.getElementById("target")
+    });
+</script>
+</xmp>
+
+<h2>Result</h2>
+<div id="_dst">
+</div>
+
+<script>
+	xmp2code(_src, _dst);
+</script>

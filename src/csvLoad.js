@@ -1,0 +1,1 @@
+csvLoad=D=>fetch(D.file).then(r=>r.text()).then(d=>d.split("\n").forEach(C=>D.target.innerHTML+=eval(`(${D.cols})=>\`${D.template}\``)(...C.split(";"))))

@@ -33,7 +33,7 @@
     <li>The last thing we need is to take the arguments and put them into the template. We can use the native template system: string templates in backticks. To name the arguments, we can create a dynamic function <tt>let applyTemplate = eval(`(${cols})=>\`${template}\``)</tt> where cols is comma separated list of names given to the columns and used in the template.
 </ol>
 
-<p>Here the youngsters usually yell <i>eval is evil!</i>. They heard some influencers doing sharade with this catchy shortcut, they see the authorities nod when they hear it and they wish to get credit, too. When you ask them why, they autoreply <i>security!</i>. But when the CSV is on the server, it is the loader responsibility to secure it, so we delegate it. And when user input is not involved, the security is guaranteed. The real security issue is not knowing what is the limitation of security guarantees and take it for granted. So we should define the limitations instead:
+<p>Here the youngsters usually yell <i>eval is evil!</i>. They heard some influencers doing sharade with this catchy shortcut, they see the authorities nod when they hear it and they wish to get credit, too. When you ask them why, they autoreply <i>security!</i>. But when the CSV is on the server, it is the loader responsibility to secure it, so we delegate it. And when user input is not involved, the security is guaranteed. The real security issue is not knowing what kind of security is guaranteed and take absolute security for granted. Absolute security is a myth, so we should define the limitations instead:
 
 <ul>
     <li>no HTML escaping in the CSV
@@ -41,7 +41,7 @@
     <li>no control of correct input values
 </ul>
 
-<p>Now let's put the above 5 steps into a single code and create a function from it, providing the input variables as object properties:
+<p>Now let's put the above 5 steps into a simple code and create a function from it, providing the input variables as object properties:
 
 <xmp>
 csvLoad = config => {
@@ -55,7 +55,7 @@ csvLoad = config => {
 
 <p>If the limitations are not needed in every use-case and can be alleviated by extension, then code it separatedly or leave it to client programmers. The less code you write, the better. For instance, does anybody want to add an optional separator? Just replace <tt>";"</tt> with <tt>config.sep||";"</tt>. But don't code it, leave to client programmers if they want it or not. Maybe they want only comma separators, so they can replace it with <tt>","</tt> so the complexity won't grow.
 
-<p>This program can be minified, but autominifiers sucks in their effectivity: we can convert the program into a single-line named expression:
+<p>This program can be minified, but autominifiers suck in their effectivity: we can convert the program into a single-line named expression:
 
 <xmp>
 csvLoad=D=>fetch(D.file).then(r=>r.text()).then(d=>d.split("\n").forEach(C=>

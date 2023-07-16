@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="src/style.css">
+<script src="src/csvLoad.js"></script>
+<script src="src/script.js"></script>
+
+<h1>Stádní myšlení programátorů</h1>
+
+<p>Stalo se nešvarem mladých programátorů, že se drží naprosto nevhodného paradigmatu. Typickým příkladem je OOP v PHP. V případě webového serveru je úkolem PHP programu vygenerování HTML stránky a zpracování dat klienta. To je přesně případ postupu příkaz po příkazu shora dolů s jasně definovaným vstupem a výstupem, což je imperativní paradigma. Objektové paradigma je napsaní programu jako interakci mezi objekty, hodí se nejvíce na kódování her a nativních aplikací, kde uživatelská akce změní stav aplikace a nespouští se celá znovu jako v PHP. PHP podporuje tvorbu objektů, ty ale povětšinou slouží jako jmenné prostory, téměř nikdy se nevytváří více instancí téže třídy, které by mezi sebou komunikovaly. PHP nabízí i další sémantiku (superglobální proměnné, funkce jako <i>first class citizen</i>), která není kompatibilní s ryzím OOP. Pojďme si proto vysvětlit kódování z pohledu sémantiky.
+
+<h2>Sémantika</h2>
+<p>Při vyjadřování myšlenky (ať už v přirozeném či programovacím jazyce) vytváříme abstraktní konstrukty, kterými lze myšlenku vhodným žargonem popsat, např. algoritmu "koncovkou aretace textbandu utemujte žebříček", rozumí opravář žaluzií, ale ostatní potřebují pojmy popsat opisem, což zvyšuje přidruženou složitost (<i>accidental complexity</i>) sdělení.
+<p>Sémanticky výstižný kód je tedy takový, který ke svému vyjádření nepoužívá přidružené nástroje, knihovny a frameworky tím, že je vhodně zvolený programovací jazyk a paradigma.
+
+<h3>Příklad těžkopádné sémantiky</h3>
+
+<xmp>
+(async _ => {
+  let response = await fetch('https://jsonplaceholder.typicode.com/todos/1');
+  let data = await response.json();
+  console.log(data);
+})();
+</xmp>
+
+<p>Zde je zapotřebí konstruktů přidružené složitosti, které nesouvisí s popisem myšlenky: IIFE a vzor async/await, který je srozumitelný člověku navyklému imperativnímu paradigmatu.
+
+<h3>Příklad výstižné sémantiky</h3>
+
+<p>Tentýž kód lze zapsat jako
+
+<xmp>
+const handleJSONresponseWith = handler => response => response.json().then(handler);
+fetch('https://jsonplaceholder.typicode.com/todos/1').then(handleJSONresponseWith(console.log));
+</xmp>
+
+<p>Kód druhého řádku kopíruje myšlenku: <i>načti příslušnou URL, a poté zpracuj JSON odpověď pomocí console.log</i>. Na prvním řádku je pak vysvětleno, co znamená <i>zpracuj JSON odpověď pomocí</i>. Rozdíl je v použití funkcionálního paradigmatu, který si nyní přiblížíme.
+
+<h2>Funkcionální paradigma</h2>
+<p>Tento pohled na svět popisuje program jako rozvoj funkce. Krokem výpočtu pak není příkaz, ale upřesnění výrazu. Program je napsán, pokud jsou všechny výrazy upřesněny až na úroveň nativních výrazů. Pojďme si vysvětlit pojmy <i>částečná aplikace</i> a <i>curryfikace</i> na jednoduchém kroku výpočtu, který definuje funkci <i>inc</i> (zvětšení o jedna) pomocí funkce <i>add</i> (součet dvou čísel). To lze například takto
+
+<xmp>
+  let add1 = (a,b) => a+b;
+  let inc1 = a => add1(1,a);
+  inc1(3); // 4
+</xmp>
+
+
+<p>Pan <i>Curry</i> viděl všechny funkce jako unární. Funkce vyšší arity převedeme na unární procesem curryfikace:
+
+<xmp>
+  let add2 = a => b => a+b;
+  let inc2 = a => add2(1)(a);
+  inc2(3); // 4
+</xmp>
+
+<p>Zde má funkce součtu <tt>add2()</tt> pouze jediný argument <tt>a</tt>, a jejím výstupem je funkce, která přijímá jediný argument <tt>b</tt> a vrací jejich součet. Výstupem <tt>add2(1)</tt> je tedy kýžená funkce, a proto lze psát výstižněji
+
+<xmp>
+  let inc3 = add2(1); // výstupem je funkce
+  inc3(3); // 4
+</xmp>
+
+<p>Této technice, kde curryfikované funkci nepředáme všechny parametry a výstupem tedy není hodnota, ale funkce nižší arity, říkáme <i>částečná aplikace</i>.
+
+<h3>FP v JS</h3>
+<p>Tyto pojmy nám dávají větší slovní zásobu umožňující lepší sémantiku. Nyní lze vysvětlit, že <tt>handleJSONresponseWith(console.log)</tt> provádí částečnou aplikaci funkce <tt>handleJSONresponseWith</tt>, kde na vstupu je funkce <tt>console.log</tt> a na výstupu funkce <tt>response => response.json().then(console.log)</tt>. <tt>.then(f)</tt> poté bere výstup z levé strany a předává jej asynchronně jako parametr funci <tt>f</tt>, proto je <tt>response</tt> naplněn výstupem <tt>fetch(...)</tt> a <tt>console.log</tt> dostává jako parametr asynchronní výstup z výrazu <tt>response.json()</tt>.

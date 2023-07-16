@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="src/style.css">
+
+<h1>Local Objects</h1>
+
+<p><a href="index.html">Back to Hell-licensed code</a>
+
+<p>Local Objects are persistent on the client side: they are synced with <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage">localStorage</a> using <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">Proxy</a> which has the following features:
+
+<ul>
+	<li>The storage capacity can be limited to 5 MB (2.5 MB text)
+	<li>It is synchronous, unlike <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API">IndexedDB</a> with unlimited capacity
+</ul>
+
+<p>localStorage can work only with strings, but these proxy objects work with other data types
+<ul>
+	<li><tt>LS</tt> string
+	<li><tt>LN</tt> number
+	<li><tt>LO</tt> objects incl. arrays
+</ul>
+
+<p>The syncing works behind the scenes:
+
+<pre>
+
+LN.x = "3.14"; // stores 3.14 as number into LO.n and saves "3.14" as x into localStorage
+LN.x-= 2; // LN.x is 1.14 and x in localStorage contains "1.14"
+LN.x = "a"; // LN.x is 0 and x in localStorage contains "0"
+LS.x = "a"; // LS.x is "a" and x in localStorage contains "a"
+
+LO.obj = {foo: "bar"} // creates a persistent object
+LO.obj.foo = {baz: "bar"} // the change is synced
+var foo = LO.obj.foo;
+foo.baz = "foobaz"; // the change in LO.obj is still synced via reference
+</pre>
+
+<h3>Advanced</h3>
+
+<p>The syncing can be optimized with these features:
+<ul>
+	<li><tt>bool .__autosave</tt> turns on or off autosaving upon change; if turned off, saving is done by calling <tt>.__store()</tt> (suitable for long text and big objects); default true
+	<li><tt>bool .__silent</tt> turns on or off error handling; if turned on and localStorage value doesn't exist while reading or it can't be converted to number (LN) or object (LO) it is silently converted to default value (0 resp. {}); if turned off TypeError is thrown in these situations (can be catched in the client code) or can be handled otherway by modifying <tt>.__badload(arg)</tt> method, which is called instead.
+</ul>
+
+<pre>
+
+LO.__autosave = false;
+LO.obj = {data: "hello"};
+LO.obj.data = "hi";
+LO.__store();
+
+LO.__silent = false;
+LO.__badload = v => console.log("conversion error: " + v);
+var test = LO.nonexistent; // logs "conversion error: null"
+</pre>
+
+<h3>Custom</h3>
+
+<p>Custom objects need to override <tt>.__save</tt> and <tt>.__load</tt> methods in <tt>Lo</tt> object:
+
+<pre>
+
+const Ld = {
+    __save: { value: v => v.toJSON() },
+    __load: { value: function(v) {
+        v = new Date(v)
+        if(v.toUTCString() == "Invalid Date") {
+            if(!this.__silent) this.__badload(v)
+            v = new Date()
+        }
+        return v
+    }},
+});
+
+const LD = L(Ld)
+
+LD.cool = new Date("2022-02-22"); // persistent
+</pre>
